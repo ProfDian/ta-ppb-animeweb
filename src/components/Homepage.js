@@ -142,11 +142,11 @@ function Homepage() {
             <header className="hero-section">
                 <div className="hero-content">
                     <h1 className="hero-title">
-                        Tugas Akhir Praktikum
-                        <span className="highlight"> PPB </span>
+                        Website Info
+                        <span className="highlight"> Animek </span>
                     </h1>
                     <p className="hero-subtitle">
-                        Website yang menampilkan berbagai anime Populer, yang sedang tayang, dan akan datang
+                        For The Weebs
                     </p>
                 </div>
             </header>
