@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { useGlobalContext } from '../context/global';
+import { FaHome, FaArrowLeft } from 'react-icons/fa';
 
 function Gallery() {
     const { getAnimePictures, pictures } = useGlobalContext();
@@ -25,7 +26,6 @@ function Gallery() {
             setIsLoading(false);
         }
     }
-    
 
     useEffect(() => {
         getAnimePictures(id);
@@ -38,10 +38,16 @@ function Gallery() {
 
     return (
         <GalleryStyled>
-            <BackButton to="/">
-                <i className="fas fa-arrow-left"></i>
-                Back to Home
-            </BackButton>
+            <NavigationButtons>
+                <NavButton to="/">
+                    <FaHome />
+                    <span>Back to Home</span>
+                </NavButton>
+                <NavButton to={`/anime/${id}`}>
+                    <FaArrowLeft />
+                    <span>Back to Anime</span>
+                </NavButton>
+            </NavigationButtons>
 
             <ContentContainer>
                 <GallerySection>
@@ -125,6 +131,59 @@ const heartbeat = keyframes`
     100% { transform: scale(1); }
 `;
 
+const NavigationButtons = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+    @media (max-width: 768px) {
+        padding: 0.8rem;
+    }
+`;
+
+const NavButton = styled(Link)`
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: #4f46e5;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: #4338ca;
+        transform: translateY(-2px);
+    }
+
+    svg {
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+        padding: 0.5rem;
+        
+        span {
+            display: none;
+        }
+
+        svg {
+            font-size: 1.3rem;
+            margin: 0;
+        }
+    }
+`;
+
 const LoadingSpinner = styled.div`
     height: 100vh;
     display: flex;
@@ -139,47 +198,28 @@ const LoadingSpinner = styled.div`
 const GalleryStyled = styled.div`
     background: linear-gradient(135deg, #1a1c2c 0%, #2a3c54 100%);
     min-height: 100vh;
-    padding: 2rem;
+    padding: 1rem;
+    padding-top: 4.5rem;
     color: #fff;
     font-family: 'Poppins', sans-serif;
-`;
 
-const BackButton = styled(Link)`
-    position: fixed;
-    top: 2rem;
-    left: 2rem;
-    text-decoration: none;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-
-    &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateX(-5px);
-    }
-
-    i {
-        font-size: 1.2rem;
+    @media (max-width: 768px) {
+        padding: 0.5rem;
+        padding-top: 4rem;
     }
 `;
 
 const ContentContainer = styled.div`
     max-width: 1400px;
-    margin: 3rem auto;
+    margin: 1rem auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
     animation: ${fadeIn} 0.6s ease-out;
 
-    @media (max-width: 1200px) {
+    @media (max-width: 1024px) {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
 `;
 
@@ -187,6 +227,10 @@ const GallerySection = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1rem;
+
+    @media (max-width: 768px) {
+        gap: 0.5rem;
+    }
 `;
 
 const MainImage = styled.div`
@@ -194,21 +238,16 @@ const MainImage = styled.div`
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease;
-
-    &:hover {
-        transform: translateY(-5px);
-    }
-
+    
     img {
         width: 100%;
         height: auto;
-        display: block;
-        transition: transform 0.3s ease;
-    }
-
-    &:hover img {
-        transform: scale(1.05);
+        max-height: 600px;
+        object-fit: cover;
+        
+        @media (max-width: 768px) {
+            max-height: 400px;
+        }
     }
 `;
 
@@ -226,6 +265,10 @@ const ImageOverlay = styled.div`
         color: #fff;
         font-size: 1.5rem;
         margin: 0;
+
+        @media (max-width: 768px) {
+            font-size: 1.2rem;
+        }
     }
 
     ${MainImage}:hover & {
@@ -235,33 +278,34 @@ const ImageOverlay = styled.div`
 
 const ThumbnailGrid = styled.div`
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 0.5rem;
     background: rgba(255, 255, 255, 0.1);
-    padding: 1rem;
-    border-radius: 15px;
+    padding: 0.8rem;
+    border-radius: 12px;
     backdrop-filter: blur(10px);
+
+    @media (max-width: 768px) {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 0.3rem;
+        padding: 0.5rem;
+    }
 `;
 
 const ThumbnailContainer = styled.div`
     cursor: pointer;
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: hidden;
-    transition: all 0.3s ease;
+    aspect-ratio: 1;
 
     img {
         width: 100%;
-        height: 100px;
+        height: 100%;
         object-fit: cover;
         transition: all 0.3s ease;
         filter: ${props => props.isActive ? 'grayscale(0)' : 'grayscale(60%)'};
-        border: ${props => props.isActive ? '3px solid #60a5fa' : '3px solid transparent'};
-        transform: ${props => props.isActive ? 'scale(1.1)' : 'scale(1)'};
-    }
-
-    &:hover img {
-        filter: grayscale(0);
-        transform: scale(1.1);
+        border: ${props => props.isActive ? '2px solid #4f46e5' : '2px solid transparent'};
+        transform: ${props => props.isActive ? 'scale(1.05)' : 'scale(1)'};
     }
 `;
 
@@ -269,29 +313,41 @@ const InfoSection = styled.div`
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border-radius: 15px;
-    padding: 2rem;
+    padding: 1.5rem;
     animation: ${fadeIn} 0.6s ease-out;
+
+    @media (max-width: 768px) {
+        padding: 1rem;
+    }
 `;
 
 const CharacterHeader = styled.div`
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     
     h1 {
-        font-size: 2.5rem;
+        font-size: 2rem;
         margin: 0;
         background: linear-gradient(to right, #60a5fa, #93c5fd);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-size: 200% auto;
         animation: ${shine} 3s linear infinite;
+        
+        @media (max-width: 768px) {
+            font-size: 1.5rem;
+        }
     }
 `;
 
 const KanjiName = styled.h2`
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     color: rgba(255, 255, 255, 0.7);
     margin: 0.5rem 0;
     font-weight: 400;
+    
+    @media (max-width: 768px) {
+        font-size: 1.2rem;
+    }
 `;
 
 const StatsContainer = styled.div`
@@ -299,6 +355,11 @@ const StatsContainer = styled.div`
     flex-direction: column;
     gap: 1.5rem;
     margin-bottom: 2rem;
+
+    @media (max-width: 768px) {
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
 `;
 
 const FavoritesCount = styled.div`
@@ -311,19 +372,32 @@ const FavoritesCount = styled.div`
     i {
         animation: ${heartbeat} 2s infinite;
     }
+
+    @media (max-width: 768px) {
+        font-size: 0.9rem;
+    }
 `;
 
 const NicknameContainer = styled.div`
     h3 {
         color: #60a5fa;
         margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+
+        @media (max-width: 768px) {
+            font-size: 1rem;
+        }
     }
 `;
 
 const NicknameTags = styled.div`
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.4rem;
+
+    @media (max-width: 768px) {
+        gap: 0.3rem;
+    }
 `;
 
 const NicknameTag = styled.span`
@@ -336,6 +410,11 @@ const NicknameTag = styled.span`
     animation: ${float} 3s ease infinite;
     animation-delay: ${props => Math.random() * 2}s;
 
+    @media (max-width: 768px) {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
     &:hover {
         background: rgba(96, 165, 250, 0.3);
         transform: translateY(-3px);
@@ -346,6 +425,12 @@ const AboutSection = styled.div`
     h3 {
         color: #60a5fa;
         margin-bottom: 1rem;
+        font-size: 1.1rem;
+
+        @media (max-width: 768px) {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
     }
 `;
 
@@ -355,6 +440,13 @@ const ScrollContent = styled.div`
     padding-right: 1rem;
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+
+    @media (max-width: 768px) {
+        max-height: 250px;
+        font-size: 0.9rem;
+        padding-right: 0.5rem;
+    }
 
     &::-webkit-scrollbar {
         width: 6px;

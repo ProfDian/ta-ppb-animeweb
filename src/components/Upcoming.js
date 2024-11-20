@@ -97,9 +97,11 @@ const UpcomingStyled = styled.div`
     .content-container {
         display: flex;
         gap: 2rem;
-        max-width: 1800px;
-        margin: 0 auto;
-        padding: 0 1rem;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+            padding: 0.5rem;
+        }
     }
 
     .main-content {
@@ -107,171 +109,207 @@ const UpcomingStyled = styled.div`
         min-width: 0;
     }
 
-    .section-title {
-        text-align: center;
-        color: #fff;
-        font-size: 2.5rem;
-        margin: 2rem 0;
-        font-weight: 700;
-        letter-spacing: 2px;
-        animation: ${titleGlow} 3s infinite;
-        background: linear-gradient(to right, #4f46e5, #818cf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        position: relative;
-
-        &::after {
-            content: '';
-            position: absolute;
-            bottom: -0.8rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 4px;
-            background: linear-gradient(to right, #4f46e5, #818cf8);
-            border-radius: 2px;
-        }
-    }
-
     .upcoming-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 2rem;
-        padding: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1.5rem;
+        padding: 0.5rem;
+
+        @media (max-width: 768px) {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 480px) {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.5rem;
+        }
     }
 
     a {
         text-decoration: none;
+        color: inherit;
     }
 
     .anime-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .anime-image {
         position: relative;
-        border-radius: 12px;
-        overflow: hidden;
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        animation: ${fadeInUp} 0.6s ease forwards;
+        aspect-ratio: 2/3;
+        width: 100%;
+        
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
 
-        .anime-image {
-            position: relative;
-            height: 400px;
-            
-            img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                transition: transform 0.3s ease;
-            }
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to top,
+                rgba(15, 23, 42, 0.95) 10%,
+                rgba(15, 23, 42, 0.4) 30%,
+                rgba(15, 23, 42, 0) 100%
+            );
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            transition: all 0.3s ease;
 
-            .overlay {
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: linear-gradient(
-                    to top,
-                    rgba(15, 23, 42, 0.95) 0%,
-                    rgba(15, 23, 42, 0.7) 50%,
-                    transparent 100%
-                );
-                padding: 1.5rem;
-                transform: translateY(70%);
-                transition: transform 0.3s ease;
+            .info {
+                h3 {
+                    color: #fff;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    margin-bottom: 0.5rem;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                    line-height: 1.3;
+                    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 
-                .info {
-                    h3 {
-                        color: #fff;
-                        font-size: 1.2rem;
-                        font-weight: 600;
-                        margin-bottom: 0.5rem;
-                        text-align: left;
-                    }
-
-                    .anime-stats {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 0.5rem;
+                    @media (max-width: 768px) {
                         font-size: 0.9rem;
-                        color: #e2e8f0;
+                        -webkit-line-clamp: 1;
                     }
                 }
 
-                .hover-info {
-                    margin-top: 1rem;
+                .anime-stats {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.3rem;
+                    font-size: 0.85rem;
+                    color: #e2e8f0;
+                    margin-bottom: 0.5rem;
                     opacity: 0;
-                    transition: opacity 0.3s ease;
+                    transform: translateY(20px);
+                    transition: all 0.3s ease;
 
-                    p {
-                        color: #94a3b8;
-                        font-size: 0.9rem;
-                        line-height: 1.5;
-                        margin-bottom: 1rem;
-                    }
+                    .stat {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.25rem;
+                        
+                        .score-label, .rank-label {
+                            color: #94a3b8;
+                        }
 
-                    .view-btn {
-                        display: inline-block;
-                        background: #4f46e5;
-                        color: white;
-                        padding: 0.5rem 1rem;
-                        border-radius: 6px;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        font-size: 0.9rem;
-
-                        &:hover {
-                            background: #4338ca;
-                            transform: translateY(-2px);
+                        .score-value, .rank-value {
+                            color: #fff;
+                            font-weight: 600;
                         }
                     }
                 }
             }
 
+            .hover-info {
+                margin-top: 0.75rem;
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 0.3s ease;
+
+                p {
+                    color: #e2e8f0;
+                    font-size: 0.85rem;
+                    margin-bottom: 0.75rem;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 3;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                    line-height: 1.4;
+                }
+
+                .view-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    background: linear-gradient(45deg, #4f46e5, #6366f1);
+                    color: white;
+                    padding: 0.5rem 1rem;
+                    border-radius: 6px;
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+
+                    &:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+                    }
+                }
+            }
+        }
+
+        /* Desktop hover effects */
+        @media (hover: hover) {
             &:hover {
                 img {
                     transform: scale(1.05);
                 }
 
                 .overlay {
-                    transform: translateY(0);
+                    background: linear-gradient(
+                        to top,
+                        rgba(15, 23, 42, 0.98) 0%,
+                        rgba(15, 23, 42, 0.95) 30%,
+                        rgba(15, 23, 42, 0.9) 100%
+                    );
+
+                    .info {
+                        .anime-stats {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
+
                     .hover-info {
                         opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+            }
+        }
+
+        /* Mobile touch behavior */
+        @media (hover: none) {
+            .overlay {
+                background: linear-gradient(
+                    to top,
+                    rgba(15, 23, 42, 0.95) 10%,
+                    rgba(15, 23, 42, 0.4) 30%,
+                    rgba(15, 23, 42, 0) 100%
+                );
+
+                &:active {
+                    background: linear-gradient(
+                        to top,
+                        rgba(15, 23, 42, 0.98) 0%,
+                        rgba(15, 23, 42, 0.95) 30%,
+                        rgba(15, 23, 42, 0.9) 100%
+                    );
+
+                    .info .anime-stats,
+                    .hover-info {
+                        opacity: 1;
+                        transform: translateY(0);
                     }
                 }
             }
         }
     }
-
-    @media (max-width: 1400px) {
-        .upcoming-grid {
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        }
-    }
-
-    @media (max-width: 968px) {
-        .content-container {
-            flex-direction: column;
-        }
-
-        .section-title {
-            font-size: 2rem;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .upcoming-grid {
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .section-title {
-            font-size: 1.8rem;
-        }
-
-        .anime-card .anime-image {
-            height: 300px;
-        }
-    }
-`;
+}`;
 
 export default Upcoming;

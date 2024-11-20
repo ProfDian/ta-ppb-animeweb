@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useGlobalContext } from '../context/global';
-import styled, { keyframes } from 'styled-components';
+import styled  from 'styled-components';
 import { motion } from 'framer-motion';
 import Sidebar from './Sidebar';
 
@@ -73,24 +73,17 @@ function Airing({ rendered }) {
     );
 }
 
-const fadeInUp = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
+
 
 const AiringStyled = styled.div`
     .content-container {
         display: flex;
         gap: 2rem;
-        max-width: 1800px;
-        margin: 0 auto;
-        padding: 0 1rem;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+            padding: 0.5rem;
+        }
     }
 
     .main-content {
@@ -98,156 +91,183 @@ const AiringStyled = styled.div`
         min-width: 0;
     }
 
-        &::after {
-            content: '';
-            position: absolute;
-            bottom: -0.8rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 4px;
-            background: linear-gradient(to right, #4f46e5, #818cf8);
-            border-radius: 2px;
-        }
-    }
-
     .airing-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 2rem;
-        padding: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1.5rem;
+        padding: 0.5rem;
+
+        @media (max-width: 768px) {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 480px) {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.5rem;
+        }
     }
 
     a {
         text-decoration: none;
+        color: inherit;
     }
 
     .anime-card {
-        position: relative;
-        border-radius: 12px;
-        overflow: hidden;
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        animation: ${fadeInUp} 0.6s ease forwards;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 
-        .anime-image {
-            position: relative;
-            height: 400px;
-            
-            img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                transition: transform 0.3s ease;
+    .anime-image {
+        position: relative;
+        aspect-ratio: 2/3;
+        width: 100%;
+        
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to top,
+                rgba(15, 23, 42, 0.95) 0%,
+                rgba(15, 23, 42, 0.8) 30%,
+                rgba(15, 23, 42, 0.4) 60%,
+                rgba(15, 23, 42, 0) 100%
+            );
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            transform: translateY(60%);
+            transition: all 0.3s ease;
+
+            @media (max-width: 768px) {
+                padding: 0.75rem;
+                transform: translateY(65%);
             }
 
-            .overlay {
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: linear-gradient(
-                    to top,
-                    rgba(15, 23, 42, 0.95) 0%,
-                    rgba(15, 23, 42, 0.7) 50%,
-                    transparent 100%
-                );
-                padding: 1.5rem;
-                transform: translateY(70%);
-                transition: transform 0.3s ease;
+            .info {
+                h3 {
+                    color: #fff;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    margin-bottom: 0.5rem;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                    line-height: 1.3;
 
-                .info {
-                    h3 {
-                        color: #fff;
-                        font-size: 1.2rem;
-                        font-weight: 600;
-                        margin-bottom: 0.5rem;
-                    }
-
-                    .anime-stats {
-                        display: flex;
-                        gap: 1rem;
+                    @media (max-width: 768px) {
                         font-size: 0.9rem;
-                        color: #e2e8f0;
+                        -webkit-line-clamp: 1;
+                        margin-bottom: 1.5rem;
                     }
                 }
 
-                .hover-info {
-                    margin-top: 1rem;
-                    opacity: 0;
-                    transition: opacity 0.3s ease;
+                .anime-stats {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    font-size: 0.85rem;
+                    margin-bottom: 0.5rem;
 
-                    p {
-                        color: #94a3b8;
-                        font-size: 0.9rem;
-                        line-height: 1.5;
-                        margin-bottom: 1rem;
+                    @media (max-width: 768px) {
+                        font-size: 0.8rem;
+                        gap: 0.75rem;
                     }
 
-                    .view-btn {
-                        display: inline-block;
-                        background: #4f46e5;
-                        color: white;
-                        padding: 0.5rem 1rem;
-                        border-radius: 6px;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        font-size: 0.9rem;
+                    .stat {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.25rem;
+                        
+                        .score-label, .rank-label {
+                            color: #94a3b8;
+                        }
 
-                        &:hover {
-                            background: #4338ca;
-                            transform: translateY(-2px);
+                        .score-value, .rank-value {
+                            color: #fff;
+                            font-weight: 600;
                         }
                     }
                 }
             }
 
-            &:hover {
-                img {
-                    transform: scale(1.05);
+            .hover-info {
+                margin-top: 0.75rem;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                transform: translateY(20px);
+
+                @media (max-width: 768px) {
+                    margin-top: 0.5rem;
                 }
 
-                .overlay {
-                    transform: translateY(0);
-                    .hover-info {
-                        opacity: 1;
+                p {
+                    color: #e2e8f0;
+                    font-size: 0.85rem;
+                    margin-bottom: 0.75rem;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 3;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                    line-height: 1.4;
+
+                    @media (max-width: 768px) {
+                        font-size: 0.8rem;
+                        -webkit-line-clamp: 2;
+                        margin-bottom: 0.5rem;
+                    }
+                }
+
+                .view-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    background: linear-gradient(45deg, #4f46e5, #6366f1);
+                    color: white;
+                    padding: 0.5rem 1rem;
+                    border-radius: 6px;
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+
+                    @media (max-width: 768px) {
+                        padding: 0.4rem 0.8rem;
+                        font-size: 0.8rem;
+                    }
+
+                    &:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
                     }
                 }
             }
         }
-    }
 
-    @media (max-width: 1400px) {
-        .airing-grid {
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        }
-    }
-
-    @media (max-width: 968px) {
-        .content-container {
-            flex-direction: column;
-        }
-
-        .section-title {
-            font-size: 2rem;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .airing-grid {
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .section-title {
-            font-size: 1.8rem;
-        }
-
-        .anime-card .anime-image {
-            height: 300px;
+        &:hover {
+            .overlay {
+                transform: translateY(0);
+                
+                .hover-info {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
         }
     }
 `;
-
 export default Airing;

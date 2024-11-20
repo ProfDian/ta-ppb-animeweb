@@ -65,8 +65,9 @@ function AnimeItem() {
                 <span className="back-icon">←</span>
                 <span>Back to Home</span>
             </div>
+
             <div className="header-section">
-                <h1 className="glow-text">{title}</h1>
+                <h1>{title}</h1>
                 <div className="score-container">
                     <div className="score-circle">
                         <span className="score-number">{score || 'N/A'}</span>
@@ -186,7 +187,7 @@ function AnimeItem() {
                 <div className="description">
                     <h3>Synopsis</h3>
                     <p>
-                        {showMore ? synopsis : synopsis?.substring(0, 500) + '...'}
+                        {showMore ? synopsis : synopsis?.substring(0, 350) + '...'}
                         <button onClick={() => setShowMore(!showMore)}>
                             {showMore ? '⌃ Show Less' : '⌄ Read More'}
                         </button>
@@ -228,20 +229,23 @@ function AnimeItem() {
             <div className="trailer-con">
                 {trailer?.embed_url ? (
                     <>
-                        <iframe 
-                            src={isTrailerPlaying ? trailer?.embed_url : ''} 
-                            title="Anime Trailer"
-                            width="800"
-                            height="450"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen>
-                        </iframe>
-                        {!isTrailerPlaying && (
-                            <button className="play-button" onClick={handleTrailerClick}>
-                                <span className="play-icon">▶</span>
-                                Watch Trailer
-                            </button>
-                        )}
+                        <div className="video-container">
+                            {isTrailerPlaying ? (
+                                <iframe 
+                                    src={trailer.embed_url} 
+                                    title="Anime Trailer"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen>
+                                </iframe>
+                            ) : (
+                                <div className="trailer-placeholder">
+                                    <button className="play-button" onClick={handleTrailerClick}>
+                                        <span className="play-icon">▶</span>
+                                        Watch Trailer
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </>
                 ) : (
                     <div className="no-trailer">
@@ -308,7 +312,6 @@ function AnimeItem() {
     );
 }
 
-// Keyframes
 const glowText = keyframes`
     0% { text-shadow: 0 0 10px rgba(82, 190, 255, 0.5), 0 0 20px rgba(82, 190, 255, 0.3); }
     50% { text-shadow: 0 0 20px rgba(255, 97, 166, 0.5), 0 0 30px rgba(255, 97, 166, 0.3); }
@@ -349,53 +352,18 @@ const slideInLeft = keyframes`
     }
 `;
 
-
 const AnimeItemStyled = styled.div`
     background: linear-gradient(135deg, #1a1c2c 0%, #2a3c54 100%);
     min-height: 100vh;
-    padding: 2rem 10rem;
+    padding: 2rem;
     color: #ffffff;
 
-    .header-section {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 3rem;
-        padding: 2rem 0;
+    @media (min-width: 768px) {
+        padding: 2rem 5rem;
+    }
 
-        h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            background: linear-gradient(45deg, #52beff, #ff61a6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: ${glowText} 3s infinite;
-        }
-
-        .score-container {
-            .score-circle {
-                background: linear-gradient(45deg, #52beff, #ff61a6);
-                border-radius: 50%;
-                width: 120px;
-                height: 120px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                animation: ${floatAnimation} 3s ease-in-out infinite;
-                box-shadow: 0 0 20px rgba(82, 190, 255, 0.3);
-
-                .score-number {
-                    font-size: 2.5rem;
-                    font-weight: bold;
-                }
-
-                .score-label {
-                    font-size: 1rem;
-                    opacity: 0.9;
-                }
-            }
-        }
+    @media (min-width: 1200px) {
+        padding: 2rem 10rem;
     }
 
     .back-button {
@@ -410,6 +378,7 @@ const AnimeItemStyled = styled.div`
         transition: all 0.3s ease;
         margin-bottom: 2rem;
         animation: ${slideInLeft} 0.5s ease-out;
+        width: fit-content;
 
         .back-icon {
             font-size: 1.5rem;
@@ -426,94 +395,200 @@ const AnimeItemStyled = styled.div`
         }
     }
 
-    .details {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: px;
-        padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    .header-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 3rem;
+        text-align: center;
 
-        .detail {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 3rem;
+        @media (min-width: 768px) {
+            flex-direction: row;
+            justify-content: space-between;
+            text-align: left;
+            align-items: center;
+        }
 
-            .image-section{width: fit-content;}
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #52beff, #ff61a6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: ${glowText} 3s infinite;
 
-            .image-container {
-                width: auto;
-                max-wifht: 350px;
-                height: auto;
-                position: relative;
-                border-radius: 15px;
-                overflow: hidden;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-                transition: all 0.3s ease;
+            @media (min-width: 768px) {
+                font-size: 2.5rem;
+            }
 
-                &:hover {
-                    transform: translateY(-10px);
-                    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            @media (min-width: 1200px) {
+                font-size: 3rem;
+            }
+        }
 
-                    .image-overlay {
-                        opacity: 1;
+        .score-container {
+            .score-circle {
+                background: linear-gradient(45deg, #52beff, #ff61a6);
+                border-radius: 50%;
+                width: 100px;
+                height: 100px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                animation: ${floatAnimation} 3s ease-in-out infinite;
+                box-shadow: 0 0 20px rgba(82, 190, 255, 0.3);
+
+                @media (min-width: 768px) {
+                    width: 120px;
+                    height: 120px;
+                }
+
+                .score-number {
+                    font-size: 2rem;
+                    font-weight: bold;
+
+                    @media (min-width: 768px) {
+                        font-size: 2.5rem;
                     }
                 }
 
-                img {
-                    width: 100%;
-                    height: auto;
-                    display: block;
+                .score-label {
+                    font-size: 0.9rem;
+                    opacity: 0.9;
+
+                    @media (min-width: 768px) {
+                        font-size: 1rem;
+                    }
+                }
+            }
+        }
+    }
+
+    .details {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+        @media (min-width: 768px) {
+            padding: 2rem;
+        }
+
+        .detail {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+
+            @media (min-width: 1200px) {
+                flex-direction: row;
+                gap: 3rem;
+            }
+
+            .image-section {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+
+                @media (min-width: 1200px) {
+                    width: auto;
+                    justify-content: flex-start;
                 }
 
-                .image-overlay {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: linear-gradient(180deg, rgba(26, 28, 44, 0.8) 0%, rgba(42, 60, 84, 0.9) 100%);
-                    opacity: 0;
+                .image-container {
+                    width: 280px;
+                    max-width: 100%;
+                    position: relative;
+                    border-radius: 15px;
+                    overflow: hidden;
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
                     transition: all 0.3s ease;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
 
-                    .rank-display {
-                        text-align: center;
-                        animation: ${pulseGlow} 2s infinite;
+                    @media (min-width: 768px) {
+                        width: 320px;
+                    }
 
-                        .rank-number {
-                            font-size: 3rem;
-                            font-weight: bold;
-                            background: linear-gradient(45deg, #52beff, #ff61a6);
-                            -webkit-background-clip: text;
-                            -webkit-text-fill-color: transparent;
+                    &:hover {
+                        transform: translateY(-10px);
+                        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+
+                        .image-overlay {
+                            opacity: 1;
                         }
+                    }
 
-                        .rank-label {
-                            display: block;
-                            font-size: 1.2rem;
-                            color: #ffffff;
-                            margin-top: 0.5rem;
+                    img {
+                        width: 100%;
+                        height: auto;
+                        display: block;
+                    }
+
+                    .image-overlay {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: linear-gradient(180deg, rgba(26, 28, 44, 0.8) 0%, rgba(42, 60, 84, 0.9) 100%);
+                        opacity: 0;
+                        transition: all 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+
+                        .rank-display {
+                            text-align: center;
+                            animation: ${pulseGlow} 2s infinite;
+
+                            .rank-number {
+                                font-size: 2.5rem;
+                                font-weight: bold;
+                                background: linear-gradient(45deg, #52beff, #ff61a6);
+                                -webkit-background-clip: text;
+                                -webkit-text-fill-color: transparent;
+
+                                @media (min-width: 768px) {
+                                    font-size: 3rem;
+                                }
+                            }
+
+                            .rank-label {
+                                display: block;
+                                font-size: 1.2rem;
+                                color: #ffffff;
+                                margin-top: 0.5rem;
+                            }
                         }
                     }
                 }
             }
 
             .anime-details {
+                flex: 1;
+
                 .titles-section {
                     margin-bottom: 2rem;
-                    
+
                     h3 {
-                        font-size: 1.5rem;
+                        font-size: 1.3rem;
                         margin-bottom: 1rem;
                         color: #52beff;
+
+                        @media (min-width: 768px) {
+                            font-size: 1.5rem;
+                        }
                     }
 
                     .title-grid {
                         display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                        grid-template-columns: 1fr;
                         gap: 1rem;
+
+                        @media (min-width: 768px) {
+                            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                        }
 
                         .title-item {
                             background: rgba(255, 255, 255, 0.05);
@@ -543,9 +618,14 @@ const AnimeItemStyled = styled.div`
 
                 .info-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                    gap: 1.5rem;
+                    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                    gap: 1rem;
                     margin: 2rem 0;
+
+                    @media (min-width: 768px) {
+                        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                        gap: 1.5rem;
+                    }
 
                     .info-item {
                         background: rgba(255, 255, 255, 0.05);
@@ -568,21 +648,21 @@ const AnimeItemStyled = styled.div`
                         .value {
                             font-size: 1.1rem;
                             color: #ffffff;
+                            word-break: break-word;
 
                             &.favorites-count {
                                 color: #ff61a6;
                             }
 
-                            &.rating-badge, 
-                            &.status-badge, 
-                            &.source-tag, 
+                            &.rating-badge,
+                            &.status-badge,
+                            &.source-tag,
                             &.season-tag {
                                 background: linear-gradient(45deg, rgba(82, 190, 255, 0.2), rgba(255, 97, 166, 0.2));
                                 padding: 0.3rem 0.8rem;
                                 border-radius: 0.5rem;
                                 font-size: 0.9rem;
                                 display: inline-block;
-                                transition: all 0.3s ease;
 
                                 &:hover {
                                     background: linear-gradient(45deg, rgba(82, 190, 255, 0.3), rgba(255, 97, 166, 0.3));
@@ -605,12 +685,18 @@ const AnimeItemStyled = styled.div`
                     h4 {
                         color: #52beff;
                         margin-bottom: 1rem;
+                        font-size: 1.2rem;
+
+                        @media (min-width: 768px) {
+                            font-size: 1.3rem;
+                        }
                     }
 
                     .company-tags {
                         display: flex;
                         flex-wrap: wrap;
                         gap: 0.8rem;
+                        margin-bottom: 1.5rem;
 
                         .company-tag {
                             background: linear-gradient(45deg, rgba(82, 190, 255, 0.2), rgba(255, 97, 166, 0.2));
@@ -635,6 +721,10 @@ const AnimeItemStyled = styled.div`
                         font-size: 0.9rem;
                         color: #52beff;
                         margin-bottom: 1rem;
+
+                        @media (min-width: 768px) {
+                            font-size: 1rem;
+                        }
                     }
 
                     .genre-tags {
@@ -664,17 +754,25 @@ const AnimeItemStyled = styled.div`
             padding: 1.5rem;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
-            
+
             h3 {
                 color: #52beff;
                 margin-bottom: 1rem;
-                font-size: 1.5rem;
+                font-size: 1.3rem;
+
+                @media (min-width: 768px) {
+                    font-size: 1.5rem;
+                }
             }
 
             p {
                 color: #ffffff;
                 line-height: 1.8;
-                font-size: 1.05rem;
+                font-size: 1rem;
+
+                @media (min-width: 768px) {
+                    font-size: 1.05rem;
+                }
             }
 
             button {
@@ -685,7 +783,7 @@ const AnimeItemStyled = styled.div`
                 cursor: pointer;
                 margin-left: 0.8rem;
                 transition: all 0.3s ease;
-                
+
                 &:hover {
                     color: #ff61a6;
                     transform: translateX(5px);
@@ -698,23 +796,35 @@ const AnimeItemStyled = styled.div`
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(10px);
         border-radius: 20px;
-        padding: 2rem;
+        padding: 1.5rem;
         margin-top: 3rem;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 
+        @media (min-width: 768px) {
+            padding: 2rem;
+        }
+
         .themes-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr;
             gap: 2rem;
+
+            @media (min-width: 992px) {
+                grid-template-columns: repeat(2, 1fr);
+            }
 
             .theme-list {
                 h4 {
-                    font-size: 1.8rem;
+                    font-size: 1.5rem;
                     color: #52beff;
                     margin-bottom: 1.5rem;
                     padding-bottom: 0.5rem;
                     border-bottom: 2px solid rgba(82, 190, 255, 0.3);
                     position: relative;
+
+                    @media (min-width: 768px) {
+                        font-size: 1.8rem;
+                    }
 
                     &::after {
                         content: '';
@@ -773,8 +883,12 @@ const AnimeItemStyled = styled.div`
 
                     .theme-text {
                         color: #ffffff;
-                        font-size: 1rem;
+                        font-size: 0.9rem;
                         letter-spacing: 0.5px;
+
+                        @media (min-width: 768px) {
+                            font-size: 1rem;
+                        }
                     }
                 }
             }
@@ -785,22 +899,43 @@ const AnimeItemStyled = styled.div`
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(10px);
         border-radius: 20px;
-        padding: 2rem;
+        padding: 1.5rem;
         margin-top: 3rem;
         position: relative;
         overflow: hidden;
 
-        iframe {
+        @media (min-width: 768px) {
+            padding: 2rem;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
             border-radius: 15px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            display: block;
-            
-            &:hover {
-                transform: scale(1.02);
+
+            iframe {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border: none;
+                transition: all 0.3s ease;
+            }
+
+            .trailer-placeholder {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
         }
 
@@ -808,41 +943,22 @@ const AnimeItemStyled = styled.div`
             background: linear-gradient(45deg, #52beff, #ff61a6);
             color: white;
             border: none;
-            padding: 1.2rem 2.5rem;
+            padding: 1rem 2rem;
             border-radius: 50px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            margin: 2rem auto 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 0.5rem;
             
-            &::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(255, 255, 255, 0.1);
-                transform: translateX(-100%);
-                transition: all 0.3s ease;
-            }
-
             &:hover {
                 transform: translateY(-5px);
                 box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-
-                &::before {
-                    transform: translateX(0);
-                }
             }
 
             .play-icon {
-                margin-right: 1rem;
                 animation: ${rippleEffect} 2s infinite;
             }
         }
@@ -852,33 +968,48 @@ const AnimeItemStyled = styled.div`
             text-align: center;
 
             .no-trailer-icon {
-                font-size: 4rem;
+                font-size: 3rem;
                 margin-bottom: 1.5rem;
                 background: linear-gradient(45deg, #52beff, #ff61a6);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 animation: ${floatAnimation} 3s infinite;
+                display: block;
+
+                @media (min-width: 768px) {
+                    font-size: 4rem;
+                }
             }
 
             h3 {
-                font-size: 1.8rem;
+                font-size: 1.5rem;
                 color: rgba(255, 255, 255, 0.7);
+
+                @media (min-width: 768px) {
+                    font-size: 1.8rem;
+                }
             }
         }
     }
 
     .characters {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 2rem;
-        margin-top: 3rem;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+
+        @media (min-width: 768px) {
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
 
         .character {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             overflow: hidden;
             transition: all 0.4s ease;
-            position: relative;
+            height: 100%;
 
             &:hover {
                 transform: translateY(-10px) scale(1.02);
@@ -899,10 +1030,11 @@ const AnimeItemStyled = styled.div`
             .character-image {
                 position: relative;
                 overflow: hidden;
+                aspect-ratio: 3/4;
 
                 img {
                     width: 100%;
-                    height: 280px;
+                    height: 100%;
                     object-fit: cover;
                     transition: all 0.4s ease;
                 }
@@ -933,6 +1065,7 @@ const AnimeItemStyled = styled.div`
                         transform: translateY(20px);
                         opacity: 0;
                         transition: all 0.4s ease;
+                        font-size: 0.9rem;
                     }
                 }
             }
@@ -942,20 +1075,29 @@ const AnimeItemStyled = styled.div`
                 text-align: center;
 
                 h4 {
-                    font-size: 1.2rem;
+                    font-size: 1.1rem;
                     margin-bottom: 0.5rem;
                     background: linear-gradient(45deg, #52beff, #ff61a6);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
+                    
+                    @media (min-width: 768px) {
+                        font-size: 1.2rem;
+                    }
                 }
 
                 .role-tag {
                     background: linear-gradient(45deg, rgba(82, 190, 255, 0.2), rgba(255, 97, 166, 0.2));
                     padding: 0.4rem 1rem;
                     border-radius: 15px;
-                    font-size: 0.9rem;
+                    font-size: 0.8rem;
                     color: #ffffff;
                     transition: all 0.3s ease;
+                    display: inline-block;
+
+                    @media (min-width: 768px) {
+                        font-size: 0.9rem;
+                    }
 
                     &:hover {
                         background: linear-gradient(45deg, rgba(82, 190, 255, 0.3), rgba(255, 97, 166, 0.3));
@@ -967,13 +1109,23 @@ const AnimeItemStyled = styled.div`
     }
 
     .reviews {
-        margin-top: 3rem;
+        margin-top: 2rem;
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 2rem;
 
+        @media (min-width: 768px) {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        @media (min-width: 1200px) {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
         .review-card {
-            background: rgba(255, 255, 255, 0.05);
+         background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(5px);
             border-radius: 15px;
             padding: 1.5rem;
@@ -1010,11 +1162,17 @@ const AnimeItemStyled = styled.div`
                 margin-bottom: 1.5rem;
 
                 .reviewer-image-container {
-                    width: 60px;
-                    height: 60px;
+                    width: 50px;
+                    height: 50px;
                     border-radius: 50%;
                     overflow: hidden;
                     border: 2px solid #52beff;
+                    flex-shrink: 0;
+
+                    @media (min-width: 768px) {
+                        width: 60px;
+                        height: 60px;
+                    }
                     
                     img {
                         width: 100%;
@@ -1024,9 +1182,20 @@ const AnimeItemStyled = styled.div`
                 }
 
                 .reviewer-info {
+                    flex: 1;
+                    min-width: 0;
+
                     h4 {
                         color: #ffffff;
                         margin-bottom: 0.5rem;
+                        font-size: 1rem;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+
+                        @media (min-width: 768px) {
+                            font-size: 1.1rem;
+                        }
                     }
 
                     .review-score {
@@ -1038,12 +1207,17 @@ const AnimeItemStyled = styled.div`
                         gap: 0.3rem;
 
                         .score-value {
-                            font-size: 1.2rem;
+                            font-size: 1.1rem;
                             font-weight: bold;
+
+                            @media (min-width: 768px) {
+                                font-size: 1.2rem;
+                            }
                         }
 
                         .score-max {
                             opacity: 0.8;
+                            font-size: 0.9rem;
                         }
                     }
                 }
@@ -1052,7 +1226,11 @@ const AnimeItemStyled = styled.div`
             .review-text {
                 color: rgba(255, 255, 255, 0.9);
                 line-height: 1.6;
-                font-size: 0.95rem;
+                font-size: 0.9rem;
+
+                @media (min-width: 768px) {
+                    font-size: 0.95rem;
+                }
             }
         }
     }
@@ -1063,32 +1241,49 @@ const AnimeItemStyled = styled.div`
         border-radius: 20px;
         padding: 3rem;
         text-align: center;
-        margin-top: 3rem;
+        margin-top: 2rem;
+
+        @media (min-width: 768px) {
+            margin-top: 3rem;
+        }
 
         .no-reviews-icon {
-            font-size: 4rem;
+            font-size: 3rem;
             margin-bottom: 1.5rem;
             background: linear-gradient(45deg, #52beff, #ff61a6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: ${floatAnimation} 3s infinite;
             display: block;
+
+            @media (min-width: 768px) {
+                font-size: 4rem;
+            }
         }
 
         p {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             color: rgba(255, 255, 255, 0.7);
+
+            @media (min-width: 768px) {
+                font-size: 1.8rem;
+            }
         }
     }
 
     .title {
         font-family: 'Oswald', sans-serif;
-        font-size: 2rem;
-        margin: 3rem 0 1.5rem 0;
+        font-size: 1.8rem;
+        margin: 2.5rem 0 1rem;
         color: #52beff;
         position: relative;
         display: inline-block;
         padding-bottom: 0.5rem;
+
+        @media (min-width: 768px) {
+            font-size: 2rem;
+            margin: 3rem 0 1.5rem;
+        }
 
         &::after {
             content: '';
@@ -1107,57 +1302,6 @@ const AnimeItemStyled = styled.div`
             transform: scaleX(1);
         }
     }
-
-    @media screen and (max-width: 1400px) {
-        padding: 2rem 5rem;
-    }
-
-    @media screen and (max-width: 1200px) {
-        padding: 2rem 3rem;
-
-        .details .detail {
-            grid-template-columns: 1fr;
-        }
-        
-        .image-section {
-                margin: 0 auto; // Center image when stacked
-                .image-container {
-                    max-width: 300px; // Slightly smaller on tablet
-                }
-            }
-        }
-
-
-        .themes-section .themes-container {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media screen and (max-width: 768px) {
-        padding: 1.5rem;
-
-        .header-section {
-            flex-direction: column;
-            text-align: center;
-            gap: 2rem;
-
-            h1 {
-                font-size: 2.5rem;
-            }
-        }
-
-        .trailer-con iframe {
-            height: 300px;
-        }
-        
-        image-section .image-container {
-            max-width: 250px; // Even smaller on mobile
-        }
-
-        .characters {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        }
-    }
 `;
 
-export default AnimeItem;   
+export default AnimeItem;

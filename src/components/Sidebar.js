@@ -7,11 +7,10 @@ import { useGlobalContext } from '../context/global';
 
 function Sidebar() {
     const { popularAnime } = useGlobalContext();
-
     const sorted = popularAnime?.sort((a, b) => b.score - a.score);
 
     const sidebarVariants = {
-        hidden: { x: 100, opacity: 0 },
+        hidden: { x: 50, opacity: 0 },
         visible: { 
             x: 0, 
             opacity: 1,
@@ -56,7 +55,7 @@ function Sidebar() {
                             key={anime.mal_id}
                             custom={index}
                             variants={itemVariants}
-                            whileHover={{ scale: 1.03 }}
+                            whileHover={{ scale: 1.02 }}
                             className="anime-item-wrapper"
                         >
                             <Link to={`/anime/${anime.mal_id}`}>
@@ -103,36 +102,47 @@ const trophyShine = keyframes`
 `;
 
 const SidebarStyled = styled.div`
-    width: 340px;
-    margin-left: 2rem;
-    margin-top: 2rem;
-    
+    width: 300px;
+    margin-left: 1rem;
+
+    @media (max-width: 768px) {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+
     .sticky-wrapper {
         position: sticky;
-        top: 2rem;
+        top: 80px;
         background: rgba(15, 23, 42, 0.8);
         backdrop-filter: blur(10px);
-        border-radius: 16px;
-        padding: 1.5rem;
+        border-radius: 12px;
+        padding: 1rem;
         border: 1px solid rgba(255, 255, 255, 0.1);
-        
+
+        @media (max-width: 768px) {
+            position: relative;
+            top: 0;
+            padding: 0.75rem;
+        }
+
         .header {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.8rem;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
             border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-            
+
             .trophy-icon {
-                font-size: 1.8rem;
-                animation: ${trophyShine} 2s infinite;
+                font-size: 1.5rem;
+                color: #ffd700;
             }
-            
+
             h3 {
                 color: #fff;
-                font-size: 1.5rem;
+                font-size: 1.2rem;
                 font-weight: 600;
                 margin: 0;
                 background: linear-gradient(to right, #fff, #e2e8f0);
@@ -145,29 +155,38 @@ const SidebarStyled = styled.div`
     .anime-list {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.75rem;
+
+        @media (max-width: 768px) {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        @media (max-width: 480px) {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
     }
 
     .anime-item-wrapper {
-        a {
-            text-decoration: none;
-        }
+        animation: slideIn 0.3s ease-out forwards;
     }
 
     .anime-card {
         position: relative;
         display: flex;
-        gap: 1rem;
-        padding: 1rem;
-        border-radius: 12px;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 8px;
         background: rgba(30, 41, 59, 0.5);
         border: 1px solid rgba(255, 255, 255, 0.1);
         transition: all 0.3s ease;
-        
+
         &:hover {
             background: rgba(30, 41, 59, 0.8);
-            animation: ${glowPulse} 2s infinite;
-            
+            transform: translateX(5px);
+
             .image-wrapper {
                 .image-overlay {
                     opacity: 1;
@@ -183,8 +202,8 @@ const SidebarStyled = styled.div`
             position: absolute;
             top: -8px;
             left: -8px;
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             background: #4f46e5;
             border-radius: 50%;
             display: flex;
@@ -192,17 +211,28 @@ const SidebarStyled = styled.div`
             justify-content: center;
             color: white;
             font-weight: bold;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1;
         }
 
         .image-wrapper {
             position: relative;
-            width: 80px;
-            height: 120px;
-            border-radius: 8px;
+            width: 70px;
+            height: 100px;
+            border-radius: 6px;
             overflow: hidden;
+            
+            @media (max-width: 768px) {
+                width: 80px;
+                height: 120px;
+            }
+
+            @media (max-width: 480px) {
+                width: 70px;
+                height: 100px;
+            }
             
             img {
                 width: 100%;
@@ -226,20 +256,21 @@ const SidebarStyled = styled.div`
 
                 .view-icon {
                     color: white;
-                    font-size: 1.5rem;
+                    font-size: 1.2rem;
                 }
             }
         }
 
         .anime-info {
             flex: 1;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             
             h5 {
                 color: #fff;
-                font-size: 0.95rem;
+                font-size: 0.9rem;
                 margin: 0;
                 display: -webkit-box;
                 -webkit-line-clamp: 2;
@@ -251,47 +282,33 @@ const SidebarStyled = styled.div`
             .stats {
                 display: flex;
                 flex-direction: column;
-                gap: 0.4rem;
+                gap: 0.3rem;
                 
                 .score {
                     display: flex;
                     align-items: center;
-                    gap: 0.4rem;
+                    gap: 0.3rem;
                     color: #eab308;
                     font-weight: 600;
+                    font-size: 0.8rem;
                     
                     .star-icon {
-                        font-size: 0.9rem;
+                        font-size: 0.8rem;
                     }
                 }
 
                 .members {
-                    font-size: 0.8rem;
+                    font-size: 0.75rem;
                     color: #94a3b8;
                 }
             }
         }
-    }
 
-    @media (max-width: 1400px) {
-        width: 300px;
-    }
-
-    @media (max-width: 768px) {
-        width: 100%;
-        margin-left: 0;
-        
-        .sticky-wrapper {
-            position: relative;
-            top: 0;
-        }
-
-        .anime-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
+        @media (hover: none) {
+            &:active {
+                transform: scale(0.98);
+            }
         }
     }
-`;
-
+`
 export default Sidebar;
