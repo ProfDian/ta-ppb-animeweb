@@ -90,225 +90,263 @@ function Sidebar() {
 }
 
 const glowPulse = keyframes`
-    0% { box-shadow: 0 0 10px rgba(79, 70, 229, 0.3); }
-    50% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.5); }
-    100% { box-shadow: 0 0 10px rgba(79, 70, 229, 0.3); }
+  0% { box-shadow: 0 0 10px rgba(79, 70, 229, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.5); }
+  100% { box-shadow: 0 0 10px rgba(79, 70, 229, 0.3); }
 `;
 
 const trophyShine = keyframes`
-    0% { color: #ffd700; }
-    50% { color: #fff7cc; }
-    100% { color: #ffd700; }
+  0% { color: #ffd700; }
+  50% { color: #fff7cc; }
+  100% { color: #ffd700; }
 `;
 
 const SidebarStyled = styled.div`
-    width: 300px;
-    margin-left: 1rem;
+  width: 300px;
+  margin-left: 1rem;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 1rem;
+  }
+
+  .sticky-wrapper {
+    position: sticky;
+    top: 80px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 
     @media (max-width: 768px) {
-        width: 100%;
-        margin-left: 0;
-        margin-top: 1rem;
+      position: relative;
+      top: 0;
+      padding: 0.75rem;
     }
 
-    .sticky-wrapper {
-        position: sticky;
-        top: 80px;
-        background: rgba(15, 23, 42, 0.8);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        padding: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+
+      @media (max-width: 768px) {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+      }
+
+      .trophy-icon {
+        font-size: 1.5rem;
+        color: #ffd700;
 
         @media (max-width: 768px) {
-            position: relative;
-            top: 0;
-            padding: 0.75rem;
+          font-size: 1.25rem;
         }
+      }
 
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      h3 {
+        color: #fff;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0;
+        background: linear-gradient(to right, #fff, #e2e8f0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
 
-            .trophy-icon {
-                font-size: 1.5rem;
-                color: #ffd700;
-            }
-
-            h3 {
-                color: #fff;
-                font-size: 1.2rem;
-                font-weight: 600;
-                margin: 0;
-                background: linear-gradient(to right, #fff, #e2e8f0);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-            }
+        @media (max-width: 768px) {
+          font-size: 1rem;
         }
+      }
+    }
+  }
+
+  .anime-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    @media (max-width: 768px) {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.75rem;
+    }
+  }
+
+  .anime-item-wrapper {
+    animation: slideIn 0.3s ease-out forwards;
+  }
+
+  .anime-card {
+    position: relative;
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.5rem;
     }
 
-    .anime-list {
+    &:hover {
+      background: rgba(30, 41, 59, 0.8);
+      transform: translateX(5px);
+
+      .image-wrapper {
+        .image-overlay {
+          opacity: 1;
+        }
+
+        img {
+          transform: scale(1.05);
+        }
+      }
+    }
+
+    .rank-badge {
+      position: absolute;
+      top: -8px;
+      left: -8px;
+      width: 24px;
+      height: 24px;
+      background: #4f46e5;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 0.8rem;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 1;
+
+      @media (max-width: 768px) {
+        top: -6px;
+        left: -6px;
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+      }
+    }
+
+    .image-wrapper {
+      position: relative;
+      width: 70px;
+      height: 100px;
+      border-radius: 6px;
+      overflow: hidden;
+
+      @media (max-width: 768px) {
+        width: 100%;
+        height: 150px;
+      }
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+      }
+
+      .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+
+        .view-icon {
+          color: white;
+          font-size: 1.2rem;
+        }
+      }
+    }
+
+    .anime-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      h5 {
+        color: #fff;
+        font-size: 0.9rem;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
+
+        @media (max-width: 768px) {
+          font-size: 0.8rem;
+          -webkit-line-clamp: 3;
+        }
+      }
+
+      .stats {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.3rem;
 
         @media (max-width: 768px) {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1rem;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+          gap: 0.5rem;
         }
 
-        @media (max-width: 480px) {
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-        }
-    }
+        .score {
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+          color: #eab308;
+          font-weight: 600;
+          font-size: 0.8rem;
 
-    .anime-item-wrapper {
-        animation: slideIn 0.3s ease-out forwards;
-    }
+          @media (max-width: 768px) {
+            font-size: 0.7rem;
+          }
 
-    .anime-card {
-        position: relative;
-        display: flex;
-        gap: 0.75rem;
-        padding: 0.75rem;
-        border-radius: 8px;
-        background: rgba(30, 41, 59, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        transition: all 0.3s ease;
-
-        &:hover {
-            background: rgba(30, 41, 59, 0.8);
-            transform: translateX(5px);
-
-            .image-wrapper {
-                .image-overlay {
-                    opacity: 1;
-                }
-                
-                img {
-                    transform: scale(1.05);
-                }
-            }
-        }
-
-        .rank-badge {
-            position: absolute;
-            top: -8px;
-            left: -8px;
-            width: 24px;
-            height: 24px;
-            background: #4f46e5;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
+          .star-icon {
             font-size: 0.8rem;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 1;
+          }
         }
 
-        .image-wrapper {
-            position: relative;
-            width: 70px;
-            height: 100px;
-            border-radius: 6px;
-            overflow: hidden;
-            
-            @media (max-width: 768px) {
-                width: 80px;
-                height: 120px;
-            }
+        .members {
+          font-size: 0.75rem;
+          color: #94a3b8;
 
-            @media (max-width: 480px) {
-                width: 70px;
-                height: 100px;
-            }
-            
-            img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                transition: transform 0.3s ease;
-            }
-
-            .image-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-
-                .view-icon {
-                    color: white;
-                    font-size: 1.2rem;
-                }
-            }
+          @media (max-width: 768px) {
+            font-size: 0.7rem;
+          }
         }
-
-        .anime-info {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            
-            h5 {
-                color: #fff;
-                font-size: 0.9rem;
-                margin: 0;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-                line-height: 1.4;
-            }
-
-            .stats {
-                display: flex;
-                flex-direction: column;
-                gap: 0.3rem;
-                
-                .score {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.3rem;
-                    color: #eab308;
-                    font-weight: 600;
-                    font-size: 0.8rem;
-                    
-                    .star-icon {
-                        font-size: 0.8rem;
-                    }
-                }
-
-                .members {
-                    font-size: 0.75rem;
-                    color: #94a3b8;
-                }
-            }
-        }
-
-        @media (hover: none) {
-            &:active {
-                transform: scale(0.98);
-            }
-        }
+      }
     }
-`
+
+    @media (hover: none) {
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+  }
+`;
+
 export default Sidebar;
