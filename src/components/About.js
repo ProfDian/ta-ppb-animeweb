@@ -15,9 +15,9 @@ function About() {
       </button>
       <div className="container">
         <div className="description">
-          <h1>About My Anime App</h1>
+          <h1>About AmbaNime</h1>
           <p>
-            Our Anime app is designed to provide you with the ultimate anime experience. Discover the latest
+            My AmbaNime is designed to provide you with the ultimate anime experience. Discover the latest
             and greatest anime shows, stay up-to-date with airing episodes, and explore a vast library of
             popular and upcoming titles.
           </p>
