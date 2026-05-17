@@ -1,87 +1,82 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FaStar, FaEye, FaTrophy } from 'react-icons/fa';
 import { useGlobalContext } from '../context/global';
 
 function Sidebar() {
     const { popularAnime } = useGlobalContext();
-    const sorted = popularAnime?.sort((a, b) => b.score - a.score);
+    const sorted = [...(popularAnime || [])].sort((a, b) => b.score - a.score);
 
     const sidebarVariants = {
-        hidden: { x: 50, opacity: 0 },
-        visible: { 
-            x: 0, 
+        hidden: { x: 32, opacity: 0 },
+        visible: {
+            x: 0,
             opacity: 1,
             transition: {
-                type: "spring",
-                stiffness: 100,
-                damping: 15
+                type: 'spring',
+                stiffness: 95,
+                damping: 16
             }
         }
     };
 
     const itemVariants = {
-        hidden: { x: 20, opacity: 0 },
+        hidden: { y: 16, opacity: 0 },
         visible: (i) => ({
-            x: 0,
+            y: 0,
             opacity: 1,
             transition: {
-                delay: i * 0.1,
-                type: "spring",
-                stiffness: 100,
-                damping: 10
+                delay: i * 0.07,
+                type: 'spring',
+                stiffness: 105,
+                damping: 14
             }
         })
     };
 
     return (
-        <SidebarStyled
-            as={motion.div}
-            initial="hidden"
-            animate="visible"
-            variants={sidebarVariants}
-        >
+        <SidebarStyled as={motion.aside} initial="hidden" animate="visible" variants={sidebarVariants}>
             <div className="sticky-wrapper">
-                <div className="header">
-                    <FaTrophy className="trophy-icon" />
-                    <h3>Top 5 Popular</h3>
-                </div>
-                
+                <header className="header">
+                    <p className="eyebrow">community picks</p>
+                    <h3>
+                        <FaTrophy className="trophy-icon" />
+                        Top 5 watchlist
+                    </h3>
+                    <p className="description">Highest-rated titles from the popularity chart this cycle.</p>
+                </header>
+
                 <div className="anime-list">
-                    {sorted?.slice(0, 5).map((anime, index) => (
-                        <motion.div
+                    {sorted.slice(0, 5).map((anime, index) => (
+                        <motion.article
                             key={anime.mal_id}
                             custom={index}
                             variants={itemVariants}
-                            whileHover={{ scale: 1.02 }}
-                            className="anime-item-wrapper"
+                            whileHover={{ y: -2 }}
+                            className="anime-item"
                         >
-                            <Link to={`/anime/${anime.mal_id}`}>
-                                <div className="anime-card">
-                                    <div className="rank-badge">{index + 1}</div>
-                                    <div className="image-wrapper">
-                                        <img src={anime.images.jpg.large_image_url} alt={anime.title} />
-                                        <div className="image-overlay">
-                                            <FaEye className="view-icon" />
-                                        </div>
+                            <Link to={`/anime/${anime.mal_id}`} className="anime-card">
+                                <span className="rank-badge">#{index + 1}</span>
+                                <div className="image-wrapper">
+                                    <img src={anime.images.jpg.large_image_url} alt={anime.title} />
+                                    <div className="image-overlay">
+                                        <FaEye />
                                     </div>
-                                    <div className="anime-info">
-                                        <h5>{anime.title}</h5>
-                                        <div className="stats">
-                                            <div className="score">
-                                                <FaStar className="star-icon" />
-                                                <span>{anime.score}</span>
-                                            </div>
-                                            <div className="members">
-                                                <span>{(anime.members / 1000).toFixed(1)}K Members</span>
-                                            </div>
-                                        </div>
+                                </div>
+                                <div className="anime-info">
+                                    <h5>{anime.title}</h5>
+                                    <div className="stats">
+                                        <span className="score">
+                                            <FaStar />
+                                            {anime.score || 'N/A'}
+                                        </span>
+                                        <span className="members">{(anime.members / 1000).toFixed(1)}k members</span>
                                     </div>
                                 </div>
                             </Link>
-                        </motion.div>
+                        </motion.article>
                     ))}
                 </div>
             </div>
@@ -89,264 +84,204 @@ function Sidebar() {
     );
 }
 
-const glowPulse = keyframes`
-  0% { box-shadow: 0 0 10px rgba(79, 70, 229, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.5); }
-  100% { box-shadow: 0 0 10px rgba(79, 70, 229, 0.3); }
-`;
-
-const trophyShine = keyframes`
-  0% { color: #ffd700; }
-  50% { color: #fff7cc; }
-  100% { color: #ffd700; }
-`;
-
-const SidebarStyled = styled.div`
-  width: 300px;
-  margin-left: 1rem;
-
-  @media (max-width: 768px) {
+const SidebarStyled = styled.aside`
     width: 100%;
-    margin-left: 0;
-    margin-top: 1rem;
-  }
+    max-width: 320px;
 
-  .sticky-wrapper {
-    position: sticky;
-    top: 80px;
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    @media (max-width: 900px) {
+        max-width: none;
+    }
 
-    @media (max-width: 768px) {
-      position: relative;
-      top: 0;
-      padding: 0.75rem;
+    .sticky-wrapper {
+        position: sticky;
+        top: 6.65rem;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background:
+            linear-gradient(165deg, rgba(22, 31, 44, 0.95), rgba(14, 20, 30, 0.94)),
+            radial-gradient(circle at 0% 0%, rgba(201, 149, 91, 0.16), transparent 55%);
+        box-shadow: 0 22px 46px rgba(5, 8, 14, 0.52);
+        padding: 1rem;
     }
 
     .header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 0.85rem;
+    }
 
-      @media (max-width: 768px) {
-        margin-bottom: 0.75rem;
-        padding-bottom: 0.75rem;
-      }
+    .eyebrow {
+        margin: 0 0 0.55rem;
+        color: var(--accent-strong);
+        font-size: 0.76rem;
+        letter-spacing: 0.07em;
+        text-transform: lowercase;
+    }
 
-      .trophy-icon {
-        font-size: 1.5rem;
-        color: #ffd700;
-
-        @media (max-width: 768px) {
-          font-size: 1.25rem;
-        }
-      }
-
-      h3 {
-        color: #fff;
-        font-size: 1.2rem;
-        font-weight: 600;
+    h3 {
         margin: 0;
-        background: linear-gradient(to right, #fff, #e2e8f0);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-
-        @media (max-width: 768px) {
-          font-size: 1rem;
-        }
-      }
-    }
-  }
-
-  .anime-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-
-    @media (max-width: 768px) {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 0.75rem;
-    }
-  }
-
-  .anime-item-wrapper {
-    animation: slideIn 0.3s ease-out forwards;
-  }
-
-  .anime-card {
-    position: relative;
-    display: flex;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    border-radius: 8px;
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-      gap: 0.5rem;
-      padding: 0.5rem;
+        font-size: 1.13rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 0.48rem;
     }
 
-    &:hover {
-      background: rgba(30, 41, 59, 0.8);
-      transform: translateX(5px);
+    .trophy-icon {
+        color: var(--accent-strong);
+        font-size: 1rem;
+    }
 
-      .image-wrapper {
-        .image-overlay {
-          opacity: 1;
-        }
+    .description {
+        margin: 0.58rem 0 0;
+        color: var(--text-secondary);
+        font-size: 0.84rem;
+        line-height: 1.5;
+        max-width: 34ch;
+    }
 
-        img {
-          transform: scale(1.05);
-        }
-      }
+    .anime-list {
+        display: grid;
+        gap: 0.58rem;
+    }
+
+    .anime-card {
+        display: grid;
+        grid-template-columns: auto 56px minmax(0, 1fr);
+        align-items: center;
+        gap: 0.58rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 13px;
+        background: rgba(15, 22, 33, 0.9);
+        padding: 0.44rem;
+        color: inherit;
+        text-decoration: none;
+        transition: border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .anime-card:hover {
+        border-color: rgba(201, 149, 91, 0.32);
+        background: rgba(20, 29, 42, 0.98);
+        box-shadow: 0 10px 20px rgba(7, 10, 17, 0.44);
     }
 
     .rank-badge {
-      position: absolute;
-      top: -8px;
-      left: -8px;
-      width: 24px;
-      height: 24px;
-      background: #4f46e5;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 0.8rem;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      z-index: 1;
-
-      @media (max-width: 768px) {
-        top: -6px;
-        left: -6px;
-        width: 20px;
-        height: 20px;
-        font-size: 0.7rem;
-      }
+        width: 2.05rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        align-self: stretch;
+        border-radius: 9px;
+        background: var(--accent-soft);
+        border: 1px solid var(--border-soft);
+        color: var(--accent-strong);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        font-variant-numeric: tabular-nums;
     }
 
     .image-wrapper {
-      position: relative;
-      width: 70px;
-      height: 100px;
-      border-radius: 6px;
-      overflow: hidden;
+        position: relative;
+        width: 56px;
+        height: 76px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
 
-      @media (max-width: 768px) {
-        width: 100%;
-        height: 150px;
-      }
-
-      img {
+    .image-wrapper img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.3s ease;
-      }
+        transition: transform 0.24s ease;
+    }
 
-      .image-overlay {
+    .anime-card:hover img {
+        transform: scale(1.05);
+    }
+
+    .image-overlay {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        inset: 0;
+        background: linear-gradient(to top, rgba(11, 16, 24, 0.86), transparent 65%);
         display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
+        align-items: flex-end;
+        justify-content: flex-end;
+        padding: 0.28rem;
+        color: rgba(255, 255, 255, 0.84);
+    }
 
-        .view-icon {
-          color: white;
-          font-size: 1.2rem;
-        }
-      }
+    .image-overlay svg {
+        font-size: 0.72rem;
     }
 
     .anime-info {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-
-      h5 {
-        color: #fff;
-        font-size: 0.9rem;
-        margin: 0;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        line-height: 1.4;
-
-        @media (max-width: 768px) {
-          font-size: 0.8rem;
-          -webkit-line-clamp: 3;
-        }
-      }
-
-      .stats {
+        min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 0.3rem;
-
-        @media (max-width: 768px) {
-          flex-direction: row;
-          justify-content: space-between;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .score {
-          display: flex;
-          align-items: center;
-          gap: 0.3rem;
-          color: #eab308;
-          font-weight: 600;
-          font-size: 0.8rem;
-
-          @media (max-width: 768px) {
-            font-size: 0.7rem;
-          }
-
-          .star-icon {
-            font-size: 0.8rem;
-          }
-        }
-
-        .members {
-          font-size: 0.75rem;
-          color: #94a3b8;
-
-          @media (max-width: 768px) {
-            font-size: 0.7rem;
-          }
-        }
-      }
+        justify-content: space-between;
+        gap: 0.45rem;
     }
 
-    @media (hover: none) {
-      &:active {
-        transform: scale(0.98);
-      }
+    .anime-info h5 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 0.84rem;
+        font-weight: 600;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        text-wrap: pretty;
     }
-  }
+
+    .stats {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.45rem;
+        font-size: 0.74rem;
+    }
+
+    .score {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        color: #e8c08d;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .members {
+        color: var(--text-muted);
+        font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 900px) {
+        .sticky-wrapper {
+            position: static;
+            padding: 0.9rem;
+        }
+
+        .anime-list {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.62rem;
+        }
+
+        .anime-card {
+            grid-template-columns: auto 52px minmax(0, 1fr);
+        }
+    }
+
+    @media (max-width: 560px) {
+        .anime-list {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .description {
+            max-width: none;
+        }
+    }
 `;
 
 export default Sidebar;
