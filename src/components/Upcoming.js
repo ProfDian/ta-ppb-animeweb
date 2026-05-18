@@ -4,9 +4,12 @@ import { useGlobalContext } from "../context/global";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import Sidebar from "./Sidebar";
+import AnimeSectionHero from "./AnimeSectionHero";
 
 function Upcoming({ rendered }) {
   const { upcomingAnime, isSearch, searchResults } = useGlobalContext();
+  const sectionAnime =
+    (!isSearch && rendered === "upcoming" ? upcomingAnime : searchResults) || [];
 
   const container = {
     hidden: { opacity: 0 },
@@ -32,11 +35,14 @@ function Upcoming({ rendered }) {
         variants={container}
       >
         <div className="main-content">
+          <AnimeSectionHero
+            label="upcoming lineup"
+            title="Next releases worth waiting for"
+            subtitle="Preview upcoming anime schedule, early buzz titles, and soon-to-air favorites."
+            items={sectionAnime}
+          />
           <div className="upcoming-grid">
-            {(!isSearch && rendered === "upcoming"
-              ? upcomingAnime
-              : searchResults
-            )?.map((anime) => (
+            {sectionAnime?.map((anime) => (
               <Link to={`/anime/${anime.mal_id}`} key={anime.mal_id}>
                 <motion.div
                   className="anime-card"

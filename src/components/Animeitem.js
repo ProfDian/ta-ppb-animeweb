@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
 
 function AnimeItem() {
     const { id } = useParams();
+    const navigate = useNavigate();
+
     const [anime, setAnime] = useState({});
     const [characters, setCharacters] = useState([]);
     const [genres, setGenres] = useState([]);
@@ -11,1295 +14,1033 @@ function AnimeItem() {
     const [reviews, setReviews] = useState([]);
     const [showMore, setShowMore] = useState(false);
     const [isTrailerPlaying, setIsTrailerPlaying] = useState(false);
-    const navigate = useNavigate();
 
-    const { 
-        title, synopsis, trailer, duration, aired, season, images, 
-        rank, score, popularity, status, rating, source,
-        favorites, titles, title_english, title_japanese, producers, studios 
+    const {
+        title,
+        synopsis,
+        trailer,
+        duration,
+        aired,
+        season,
+        images,
+        rank,
+        score,
+        popularity,
+        status,
+        rating,
+        source,
+        favorites,
+        titles,
+        title_english,
+        title_japanese,
+        producers,
+        studios
     } = anime;
 
-    const getAnime = async (anime) => {
-        const response = await fetch(`https://api.jikan.moe/v4/anime/${anime}`);
-        const data = await response.json();
-        setAnime(data.data);
-        setGenres(data.data.genres);
-    }
+    const safeSynopsis = synopsis || 'Synopsis is not available yet for this title.';
+    const synopsisPreview = useMemo(() => {
+        if (safeSynopsis.length <= 360) {
+            return safeSynopsis;
+        }
+        return `${safeSynopsis.substring(0, 360)}...`;
+    }, [safeSynopsis]);
 
-    const getCharacters = async (anime) => {
-        const response = await fetch(`https://api.jikan.moe/v4/anime/${anime}/characters`);
+    const uniqueAltTitles = useMemo(() => {
+        const collected = [];
+        if (title_english) {
+            collected.push({ type: 'English', title: title_english });
+        }
+        if (title_japanese) {
+            collected.push({ type: 'Japanese', title: title_japanese });
+        }
+        (titles || []).forEach((entry) => {
+            const exists = collected.some((item) => item.title === entry.title);
+            if (!exists) {
+                collected.push(entry);
+            }
+        });
+        return collected.slice(0, 6);
+    }, [title_english, title_japanese, titles]);
+
+    const getAnime = async (animeId) => {
+        const response = await fetch(`https://api.jikan.moe/v4/anime/${animeId}`);
+        const data = await response.json();
+        setAnime(data.data || {});
+        setGenres(data.data?.genres || []);
+    };
+
+    const getCharacters = async (animeId) => {
+        const response = await fetch(`https://api.jikan.moe/v4/anime/${animeId}/characters`);
         const data = await response.json();
         setCharacters((data.data || []).slice(0, 10));
-    }
+    };
 
-    const getThemes = async (anime) => {
-        const response = await fetch(`https://api.jikan.moe/v4/anime/${anime}/themes`);
+    const getThemes = async (animeId) => {
+        const response = await fetch(`https://api.jikan.moe/v4/anime/${animeId}/themes`);
         const data = await response.json();
-        setThemes(data.data);
-    }
+        setThemes(data.data || { openings: [], endings: [] });
+    };
 
-    const getReviews = async (anime) => {
-        const response = await fetch(`https://api.jikan.moe/v4/anime/${anime}/reviews`);
+    const getReviews = async (animeId) => {
+        const response = await fetch(`https://api.jikan.moe/v4/anime/${animeId}/reviews`);
         const data = await response.json();
         setReviews((data.data || []).slice(0, 6));
-    }
+    };
 
     useEffect(() => {
         getAnime(id);
         getCharacters(id);
         getThemes(id);
         getReviews(id);
+        setIsTrailerPlaying(false);
+        setShowMore(false);
     }, [id]);
-
-    const handleTrailerClick = () => {
-        setIsTrailerPlaying(true);
-    }
-
-    const handleBack = () => {
-        navigate('/');
-    };
 
     return (
         <AnimeItemStyled>
-            <div className="back-button" onClick={handleBack}>
-                <span className="back-icon">←</span>
-                <span>Back to Home</span>
-            </div>
+            <div className="page-shell">
+                <motion.button
+                    type="button"
+                    className="back-button"
+                    onClick={() => navigate('/')}
+                    initial={{ opacity: 0, y: 24, filter: 'blur(6px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    transition={{ duration: 0.75, ease: [0.32, 0.72, 0, 1] }}
+                >
+                    <span className="arrow-island">↙</span>
+                    <span>back to catalog</span>
+                </motion.button>
 
-            <div className="header-section">
-                <h1>{title}</h1>
-                <div className="score-container">
-                    <div className="score-circle">
-                        <span className="score-number">{score || 'N/A'}</span>
-                        <span className="score-label">Score</span>
-                    </div>
-                </div>
-            </div>
+                <section className="hero-grid">
+                    <motion.div
+                        className="hero-copy"
+                        initial={{ opacity: 0, y: 30, filter: 'blur(6px)' }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                        transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
+                    >
+                        <p className="eyebrow">anime profile</p>
+                        <h1>{title || 'Loading title...'}</h1>
+                        <p className="lead">
+                            {showMore ? safeSynopsis : synopsisPreview}
+                            {safeSynopsis.length > 360 && (
+                                <button type="button" onClick={() => setShowMore((prev) => !prev)} className="read-toggle">
+                                    {showMore ? 'show less' : 'read full synopsis'}
+                                </button>
+                            )}
+                        </p>
 
-            <div className="details">
-                <div className="detail">
-                    <div className="image-section">
-                        <div className="image-container">
-                            <img src={images?.jpg.large_image_url} alt="" />
-                            <div className="image-overlay">
-                                <div className="rank-display">
-                                    <span className="rank-number">#{rank}</span>
-                                    <span className="rank-label">Ranked</span>
+                        <div className="meta-row">
+                            <span className="meta-chip">score {score || 'N/A'}</span>
+                            <span className="meta-chip">rank #{rank || 'N/A'}</span>
+                            <span className="meta-chip">popularity #{popularity || 'N/A'}</span>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        className="poster-shell"
+                        initial={{ opacity: 0, y: 34, filter: 'blur(8px)' }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                        transition={{ delay: 0.08, duration: 0.84, ease: [0.32, 0.72, 0, 1] }}
+                    >
+                        <div className="poster-core">
+                            <div className="poster-wrap">
+                                <img src={images?.jpg?.large_image_url} alt={`${title || 'Anime'} poster`} />
+                                <div className="poster-overlay">
+                                    <span className="rank-tag">rank #{rank || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div className="poster-stats">
+                                <div>
+                                    <span className="label">status</span>
+                                    <span className="value">{status || 'Unknown'}</span>
+                                </div>
+                                <div>
+                                    <span className="label">favorites</span>
+                                    <span className="value">{favorites || 0}</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div className="anime-details">
-                        <div className="titles-section">
-                            <h3>Alternative Titles</h3>
+                    </motion.div>
+                </section>
+
+                <motion.section
+                    className="bento-grid"
+                    initial={{ opacity: 0, y: 34, filter: 'blur(8px)' }}
+                    whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: true, amount: 0.12 }}
+                    transition={{ duration: 0.85, ease: [0.32, 0.72, 0, 1] }}
+                >
+                    <article className="panel shell-wide">
+                        <div className="panel-core">
+                            <p className="panel-kicker">titles</p>
+                            <h3>alternative naming</h3>
                             <div className="title-grid">
-                                {title_english && (
-                                    <div className="title-item">
-                                        <span className="label">English</span>
-                                        <span className="value">{title_english}</span>
-                                    </div>
-                                )}
-                                {title_japanese && (
-                                    <div className="title-item">
-                                        <span className="label">Japanese</span>
-                                        <span className="value">{title_japanese}</span>
-                                    </div>
-                                )}
-                                {titles?.map((title, index) => (
-                                    <div key={index} className="title-item">
-                                        <span className="label">{title.type}</span>
-                                        <span className="value">{title.title}</span>
+                                {uniqueAltTitles.map((entry, index) => (
+                                    <div key={`${entry.type}-${index}`} className="title-item">
+                                        <span className="item-label">{entry.type}</span>
+                                        <span className="item-value">{entry.title}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
+                    </article>
 
-                        <div className="info-grid">
-                            <div className="info-item">
-                                <span className="label">Aired</span>
-                                <span className="value">{aired?.string}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="label">Rating</span>
-                                <span className="value rating-badge">{rating}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="label">Popularity</span>
-                                <span className="value popularity-number">#{popularity}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="label">Status</span>
-                                <span className="value status-badge">{status}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="label">Source</span>
-                                <span className="value source-tag">{source}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="label">Season</span>
-                                <span className="value season-tag">{season}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="label">Duration</span>
-                                <span className="value">{duration}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="label">Favorites</span>
-                                <span className="value favorites-count">♥ {favorites}</span>
-                            </div>
-                        </div>
-
-                        <div className="production-info">
-                            <div className="producers">
-                                <h4>Producers</h4>
-                                <div className="company-tags">
-                                    {producers?.map((producer) => (
-                                        <span key={producer.mal_id} className="company-tag">
-                                            {producer.name}
-                                        </span>
-                                    ))}
+                    <article className="panel">
+                        <div className="panel-core">
+                            <p className="panel-kicker">production</p>
+                            <h3>release details</h3>
+                            <div className="detail-list">
+                                <div className="detail-item">
+                                    <span>aired</span>
+                                    <strong>{aired?.string || 'Unknown'}</strong>
                                 </div>
-                            </div>
-                            <div className="studios">
-                                <h4>Studios</h4>
-                                <div className="company-tags">
-                                    {studios?.map((studio) => (
-                                        <span key={studio.mal_id} className="company-tag">
-                                            {studio.name}
-                                        </span>
-                                    ))}
+                                <div className="detail-item">
+                                    <span>season</span>
+                                    <strong>{season || 'Unknown'}</strong>
+                                </div>
+                                <div className="detail-item">
+                                    <span>source</span>
+                                    <strong>{source || 'Unknown'}</strong>
+                                </div>
+                                <div className="detail-item">
+                                    <span>duration</span>
+                                    <strong>{duration || 'Unknown'}</strong>
+                                </div>
+                                <div className="detail-item">
+                                    <span>rating</span>
+                                    <strong>{rating || 'Unknown'}</strong>
                                 </div>
                             </div>
                         </div>
+                    </article>
 
-                        <div className="genres">
-                            <span className="label">Genres</span>
-                            <div className="genre-tags">
-                                {genres.map((genre) => (
-                                    <span key={genre.mal_id} className="genre">{genre.name}</span>
-                                ))}
+                    <article className="panel">
+                        <div className="panel-core">
+                            <p className="panel-kicker">genres</p>
+                            <h3>story taxonomy</h3>
+                            <div className="pill-list">
+                                {genres.length > 0 ? (
+                                    genres.map((genre) => <span key={genre.mal_id}>{genre.name}</span>)
+                                ) : (
+                                    <span>Not listed</span>
+                                )}
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </article>
 
-                <div className="description">
-                    <h3>Synopsis</h3>
-                    <p>
-                        {showMore ? synopsis : synopsis?.substring(0, 350) + '...'}
-                        <button onClick={() => setShowMore(!showMore)}>
-                            {showMore ? '⌃ Show Less' : '⌄ Read More'}
-                        </button>
-                    </p>
-                </div>
-            </div>
-
-            {(themes.openings.length > 0 || themes.endings.length > 0) && (
-                <div className="themes-section">
-                    <h3 className="title">Theme Songs</h3>
-                    <div className="themes-container">
-                        {themes.openings.length > 0 && (
-                            <div className="theme-list">
-                                <h4>Opening Themes</h4>
-                                {themes.openings.map((opening, index) => (
-                                    <div key={index} className="theme-item">
-                                        <span className="theme-number">#{index + 1}</span>
-                                        <span className="theme-text">{opening}</span>
+                    <article className="panel shell-wide">
+                        <div className="panel-core">
+                            <p className="panel-kicker">teams</p>
+                            <h3>producers and studios</h3>
+                            <div className="company-columns">
+                                <div>
+                                    <span className="column-label">producers</span>
+                                    <div className="pill-list compact">
+                                        {(producers || []).length > 0 ? (
+                                            producers.map((producer) => <span key={producer.mal_id}>{producer.name}</span>)
+                                        ) : (
+                                            <span>Not listed</span>
+                                        )}
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                        {themes.endings.length > 0 && (
-                            <div className="theme-list">
-                                <h4>Ending Themes</h4>
-                                {themes.endings.map((ending, index) => (
-                                    <div key={index} className="theme-item">
-                                        <span className="theme-number">#{index + 1}</span>
-                                        <span className="theme-text">{ending}</span>
+                                </div>
+                                <div>
+                                    <span className="column-label">studios</span>
+                                    <div className="pill-list compact">
+                                        {(studios || []).length > 0 ? (
+                                            studios.map((studio) => <span key={studio.mal_id}>{studio.name}</span>)
+                                        ) : (
+                                            <span>Not listed</span>
+                                        )}
                                     </div>
-                                ))}
+                                </div>
                             </div>
-                        )}
-                    </div>
-                </div>
-            )}
+                        </div>
+                    </article>
+                </motion.section>
 
-            <h3 className="title">Trailer</h3>
-            <div className="trailer-con">
-                {trailer?.embed_url ? (
-                    <>
-                        <div className="video-container">
-                            {isTrailerPlaying ? (
-                                <iframe 
-                                    src={trailer.embed_url} 
-                                    title="Anime Trailer"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen>
-                                </iframe>
-                            ) : (
-                                <div className="trailer-placeholder">
-                                    <button className="play-button" onClick={handleTrailerClick}>
-                                        <span className="play-icon">▶</span>
-                                        Watch Trailer
-                                    </button>
+                {(themes.openings.length > 0 || themes.endings.length > 0) && (
+                    <motion.section
+                        className="section-shell"
+                        initial={{ opacity: 0, y: 34, filter: 'blur(8px)' }}
+                        whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                        viewport={{ once: true, amount: 0.15 }}
+                        transition={{ duration: 0.85, ease: [0.32, 0.72, 0, 1] }}
+                    >
+                        <div className="section-header">
+                            <p className="eyebrow">soundtrack</p>
+                            <h2>theme songs</h2>
+                        </div>
+
+                        <div className="theme-columns">
+                            {themes.openings.length > 0 && (
+                                <div className="theme-list">
+                                    <h4>opening themes</h4>
+                                    {themes.openings.map((opening, index) => (
+                                        <div key={`${opening}-${index}`} className="theme-item">
+                                            <span className="track-id">{String(index + 1).padStart(2, '0')}</span>
+                                            <span>{opening}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {themes.endings.length > 0 && (
+                                <div className="theme-list">
+                                    <h4>ending themes</h4>
+                                    {themes.endings.map((ending, index) => (
+                                        <div key={`${ending}-${index}`} className="theme-item">
+                                            <span className="track-id">{String(index + 1).padStart(2, '0')}</span>
+                                            <span>{ending}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
-                    </>
-                ) : (
-                    <div className="no-trailer">
-                        <span className="no-trailer-icon">🎬</span>
-                        <h3>Trailer not available</h3>
-                    </div>
+                    </motion.section>
                 )}
-            </div>
 
-            <h3 className="title">Characters</h3>
-            <div className="characters">
-                {characters?.map((character, index) => {
-                    const { role } = character;
-                    const { images, name, mal_id } = character.character;
-                    return (
-                        <Link to={`/character/${mal_id}`} key={index}>
-                            <div className="character">
-                                <div className="character-image">
-                                    <img src={images?.jpg.image_url} alt="" />
-                                    <div className="character-overlay">
-                                        <span className="view-more">View Details</span>
-                                    </div>
-                                </div>
-                                <div className="character-info">
-                                    <h4>{name}</h4>
-                                    <p className="role-tag">{role}</p>
-                                </div>
-                            </div>
-                        </Link>
-                    );
-                })}
-            </div>
+                <motion.section
+                    className="section-shell"
+                    initial={{ opacity: 0, y: 34, filter: 'blur(8px)' }}
+                    whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: true, amount: 0.15 }}
+                    transition={{ duration: 0.85, ease: [0.32, 0.72, 0, 1] }}
+                >
+                    <div className="section-header">
+                        <p className="eyebrow">media</p>
+                        <h2>official trailer</h2>
+                    </div>
 
-            <h3 className="title">Recent Reviews</h3>
-            {reviews.length > 0 ? (
-                <div className="reviews">
-                    {reviews.map((review, index) => (
-                        <div key={index} className="review-card">
-                            <div className="review-header">
-                                <div className="reviewer-image-container">
-                                    <img src={review.user.images?.jpg.image_url} alt="" className="reviewer-image" />
-                                </div>
-                                <div className="reviewer-info">
-                                    <h4>{review.user.username}</h4>
-                                    <div className="review-score">
-                                        <span className="score-value">{review.score}</span>
-                                        <span className="score-max">/10</span>
-                                    </div>
-                                </div>
+                    <div className="trailer-frame">
+                        {trailer?.embed_url ? (
+                            <div className="video-container">
+                                {isTrailerPlaying ? (
+                                    <iframe
+                                        src={trailer.embed_url}
+                                        title="Anime Trailer"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    />
+                                ) : (
+                                    <button type="button" className="play-button" onClick={() => setIsTrailerPlaying(true)}>
+                                        <span className="play-label">watch trailer</span>
+                                        <span className="play-icon-wrap">↗</span>
+                                    </button>
+                                )}
                             </div>
-                            <p className="review-text">
-                                {review.review.substring(0, 200)}...
-                            </p>
+                        ) : (
+                            <div className="empty-state">Trailer is not available for this title.</div>
+                        )}
+                    </div>
+                </motion.section>
+
+                <motion.section
+                    className="section-shell"
+                    initial={{ opacity: 0, y: 34, filter: 'blur(8px)' }}
+                    whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: true, amount: 0.15 }}
+                    transition={{ duration: 0.85, ease: [0.32, 0.72, 0, 1] }}
+                >
+                    <div className="section-header">
+                        <p className="eyebrow">cast</p>
+                        <h2>main characters</h2>
+                    </div>
+
+                    <div className="characters-grid">
+                        {characters.map((character, index) => {
+                            const { role } = character;
+                            const { images: characterImages, name, mal_id } = character.character;
+                            return (
+                                <Link key={`${mal_id}-${index}`} to={`/character/${mal_id}`} className="character-card">
+                                    <div className="character-image-wrap">
+                                        <img src={characterImages?.jpg?.image_url} alt={`${name} portrait`} />
+                                    </div>
+                                    <div className="character-info">
+                                        <h4>{name}</h4>
+                                        <p>{role}</p>
+                                    </div>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </motion.section>
+
+                <motion.section
+                    className="section-shell"
+                    initial={{ opacity: 0, y: 34, filter: 'blur(8px)' }}
+                    whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: true, amount: 0.15 }}
+                    transition={{ duration: 0.85, ease: [0.32, 0.72, 0, 1] }}
+                >
+                    <div className="section-header">
+                        <p className="eyebrow">community</p>
+                        <h2>recent reviews</h2>
+                    </div>
+
+                    {reviews.length > 0 ? (
+                        <div className="reviews-grid">
+                            {reviews.map((review, index) => (
+                                <article key={index} className="review-card">
+                                    <div className="review-head">
+                                        <img
+                                            src={review.user.images?.jpg?.image_url || images?.jpg?.image_url}
+                                            alt={`${review.user.username} avatar`}
+                                        />
+                                        <div>
+                                            <h4>{review.user.username}</h4>
+                                            <span className="review-score">{review.score}/10</span>
+                                        </div>
+                                    </div>
+                                    <p>{review.review.substring(0, 220)}...</p>
+                                </article>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="no-reviews">
-                    <span className="no-reviews-icon">📝</span>
-                    <p>No Recent Reviews</p>
-                </div>
-            )}
+                    ) : (
+                        <div className="empty-state">No recent reviews for this title.</div>
+                    )}
+                </motion.section>
+            </div>
         </AnimeItemStyled>
     );
 }
 
-const glowText = keyframes`
-    0% { text-shadow: 0 0 10px rgba(82, 190, 255, 0.5), 0 0 20px rgba(82, 190, 255, 0.3); }
-    50% { text-shadow: 0 0 20px rgba(255, 97, 166, 0.5), 0 0 30px rgba(255, 97, 166, 0.3); }
-    100% { text-shadow: 0 0 10px rgba(82, 190, 255, 0.5), 0 0 20px rgba(82, 190, 255, 0.3); }
-`;
+const AnimeItemStyled = styled.main`
+    --ease-premium: cubic-bezier(0.32, 0.72, 0, 1);
 
-const floatAnimation = keyframes`
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0px); }
-`;
+    min-height: 100dvh;
+    padding: 2.8rem 1rem 5.2rem;
+    color: var(--text-primary);
 
-const shineEffect = keyframes`
-    0% { background-position: 200% center; }
-    100% { background-position: -200% center; }
-`;
-
-const rippleEffect = keyframes`
-    0% { transform: scale(0.95); opacity: 0.7; }
-    50% { transform: scale(1.05); opacity: 0.9; }
-    100% { transform: scale(0.95); opacity: 0.7; }
-`;
-
-const pulseGlow = keyframes`
-    0% { box-shadow: 0 0 10px rgba(82, 190, 255, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(255, 97, 166, 0.5); }
-    100% { box-shadow: 0 0 10px rgba(82, 190, 255, 0.5); }
-`;
-
-const slideInLeft = keyframes`
-    from {
-        transform: translateX(-20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-`;
-
-const AnimeItemStyled = styled.div`
-    background: linear-gradient(135deg, #1a1c2c 0%, #2a3c54 100%);
-    min-height: 100vh;
-    padding: 2rem;
-    color: #ffffff;
-
-    @media (min-width: 768px) {
-        padding: 2rem 5rem;
-    }
-
-    @media (min-width: 1200px) {
-        padding: 2rem 10rem;
+    .page-shell {
+        width: min(1320px, 100%);
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
     }
 
     .back-button {
+        width: fit-content;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        background: rgba(16, 24, 35, 0.86);
+        color: var(--text-secondary);
+        padding: 0.44rem 0.86rem 0.44rem 0.5rem;
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.8rem 1.5rem;
-        background: linear-gradient(45deg, rgba(82, 190, 255, 0.2), rgba(255, 97, 166, 0.2));
-        border-radius: 50px;
-        color: #ffffff;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-bottom: 2rem;
-        animation: ${slideInLeft} 0.5s ease-out;
-        width: fit-content;
-
-        .back-icon {
-            font-size: 1.5rem;
-            transition: transform 0.3s ease;
-        }
-
-        &:hover {
-            background: linear-gradient(45deg, rgba(82, 190, 255, 0.3), rgba(255, 97, 166, 0.3));
-            transform: translateX(-5px);
-
-            .back-icon {
-                transform: translateX(-5px);
-            }
-        }
+        gap: 0.58rem;
+        font-size: 0.86rem;
+        letter-spacing: 0.02em;
+        text-transform: lowercase;
+        transition: transform 0.65s var(--ease-premium), border-color 0.45s var(--ease-premium), color 0.45s var(--ease-premium), background 0.45s var(--ease-premium);
     }
 
-    .header-section {
-        display: flex;
-        flex-direction: column;
+    .back-button:hover {
+        transform: translateY(-2px);
+        border-color: var(--border-soft);
+        color: var(--text-primary);
+        background: rgba(201, 149, 91, 0.14);
+    }
+
+    .back-button:active {
+        transform: scale(0.98);
+    }
+
+    .arrow-island {
+        width: 1.65rem;
+        height: 1.65rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        display: inline-flex;
         align-items: center;
-        gap: 2rem;
-        margin-bottom: 3rem;
-        text-align: center;
-
-        @media (min-width: 768px) {
-            flex-direction: row;
-            justify-content: space-between;
-            text-align: left;
-            align-items: center;
-        }
-
-        h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(45deg, #52beff, #ff61a6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: ${glowText} 3s infinite;
-
-            @media (min-width: 768px) {
-                font-size: 2.5rem;
-            }
-
-            @media (min-width: 1200px) {
-                font-size: 3rem;
-            }
-        }
-
-        .score-container {
-            .score-circle {
-                background: linear-gradient(45deg, #52beff, #ff61a6);
-                border-radius: 50%;
-                width: 100px;
-                height: 100px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                animation: ${floatAnimation} 3s ease-in-out infinite;
-                box-shadow: 0 0 20px rgba(82, 190, 255, 0.3);
-
-                @media (min-width: 768px) {
-                    width: 120px;
-                    height: 120px;
-                }
-
-                .score-number {
-                    font-size: 2rem;
-                    font-weight: bold;
-
-                    @media (min-width: 768px) {
-                        font-size: 2.5rem;
-                    }
-                }
-
-                .score-label {
-                    font-size: 0.9rem;
-                    opacity: 0.9;
-
-                    @media (min-width: 768px) {
-                        font-size: 1rem;
-                    }
-                }
-            }
-        }
+        justify-content: center;
+        color: var(--accent-strong);
+        transition: transform 0.65s var(--ease-premium), background 0.45s var(--ease-premium);
     }
 
-    .details {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-
-        @media (min-width: 768px) {
-            padding: 2rem;
-        }
-
-        .detail {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-
-            @media (min-width: 1200px) {
-                flex-direction: row;
-                gap: 3rem;
-            }
-
-            .image-section {
-                width: 100%;
-                display: flex;
-                justify-content: center;
-
-                @media (min-width: 1200px) {
-                    width: auto;
-                    justify-content: flex-start;
-                }
-
-                .image-container {
-                    width: 280px;
-                    max-width: 100%;
-                    position: relative;
-                    border-radius: 15px;
-                    overflow: hidden;
-                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-                    transition: all 0.3s ease;
-
-                    @media (min-width: 768px) {
-                        width: 320px;
-                    }
-
-                    &:hover {
-                        transform: translateY(-10px);
-                        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-
-                        .image-overlay {
-                            opacity: 1;
-                        }
-                    }
-
-                    img {
-                        width: 100%;
-                        height: auto;
-                        display: block;
-                    }
-
-                    .image-overlay {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background: linear-gradient(180deg, rgba(26, 28, 44, 0.8) 0%, rgba(42, 60, 84, 0.9) 100%);
-                        opacity: 0;
-                        transition: all 0.3s ease;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-
-                        .rank-display {
-                            text-align: center;
-                            animation: ${pulseGlow} 2s infinite;
-
-                            .rank-number {
-                                font-size: 2.5rem;
-                                font-weight: bold;
-                                background: linear-gradient(45deg, #52beff, #ff61a6);
-                                -webkit-background-clip: text;
-                                -webkit-text-fill-color: transparent;
-
-                                @media (min-width: 768px) {
-                                    font-size: 3rem;
-                                }
-                            }
-
-                            .rank-label {
-                                display: block;
-                                font-size: 1.2rem;
-                                color: #ffffff;
-                                margin-top: 0.5rem;
-                            }
-                        }
-                    }
-                }
-            }
-
-            .anime-details {
-                flex: 1;
-
-                .titles-section {
-                    margin-bottom: 2rem;
-
-                    h3 {
-                        font-size: 1.3rem;
-                        margin-bottom: 1rem;
-                        color: #52beff;
-
-                        @media (min-width: 768px) {
-                            font-size: 1.5rem;
-                        }
-                    }
-
-                    .title-grid {
-                        display: grid;
-                        grid-template-columns: 1fr;
-                        gap: 1rem;
-
-                        @media (min-width: 768px) {
-                            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                        }
-
-                        .title-item {
-                            background: rgba(255, 255, 255, 0.05);
-                            padding: 1rem;
-                            border-radius: 10px;
-                            transition: all 0.3s ease;
-
-                            &:hover {
-                                background: rgba(255, 255, 255, 0.1);
-                                transform: translateX(5px);
-                            }
-
-                            .label {
-                                display: block;
-                                font-size: 0.9rem;
-                                color: #52beff;
-                                margin-bottom: 0.5rem;
-                            }
-
-                            .value {
-                                font-size: 1.1rem;
-                                color: #ffffff;
-                            }
-                        }
-                    }
-                }
-
-                .info-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                    gap: 1rem;
-                    margin: 2rem 0;
-
-                    @media (min-width: 768px) {
-                        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                        gap: 1.5rem;
-                    }
-
-                    .info-item {
-                        background: rgba(255, 255, 255, 0.05);
-                        padding: 1rem;
-                        border-radius: 10px;
-                        transition: all 0.3s ease;
-
-                        &:hover {
-                            background: rgba(255, 255, 255, 0.1);
-                            transform: translateY(-5px);
-                        }
-
-                        .label {
-                            display: block;
-                            font-size: 0.9rem;
-                            color: #52beff;
-                            margin-bottom: 0.5rem;
-                        }
-
-                        .value {
-                            font-size: 1.1rem;
-                            color: #ffffff;
-                            word-break: break-word;
-
-                            &.favorites-count {
-                                color: #ff61a6;
-                            }
-
-                            &.rating-badge,
-                            &.status-badge,
-                            &.source-tag,
-                            &.season-tag {
-                                background: linear-gradient(45deg, rgba(82, 190, 255, 0.2), rgba(255, 97, 166, 0.2));
-                                padding: 0.3rem 0.8rem;
-                                border-radius: 0.5rem;
-                                font-size: 0.9rem;
-                                display: inline-block;
-
-                                &:hover {
-                                    background: linear-gradient(45deg, rgba(82, 190, 255, 0.3), rgba(255, 97, 166, 0.3));
-                                    transform: translateY(-2px);
-                                }
-                            }
-
-                            &.popularity-number {
-                                font-family: 'Oswald', sans-serif;
-                                font-size: 1.3rem;
-                                color: #ff61a6;
-                            }
-                        }
-                    }
-                }
-
-                .production-info {
-                    margin-top: 2rem;
-
-                    h4 {
-                        color: #52beff;
-                        margin-bottom: 1rem;
-                        font-size: 1.2rem;
-
-                        @media (min-width: 768px) {
-                            font-size: 1.3rem;
-                        }
-                    }
-
-                    .company-tags {
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 0.8rem;
-                        margin-bottom: 1.5rem;
-
-                        .company-tag {
-                            background: linear-gradient(45deg, rgba(82, 190, 255, 0.2), rgba(255, 97, 166, 0.2));
-                            padding: 0.5rem 1rem;
-                            border-radius: 20px;
-                            font-size: 0.9rem;
-                            transition: all 0.3s ease;
-
-                            &:hover {
-                                background: linear-gradient(45deg, rgba(82, 190, 255, 0.3), rgba(255, 97, 166, 0.3));
-                                transform: translateY(-3px);
-                            }
-                        }
-                    }
-                }
-
-                .genres {
-                    margin-top: 2rem;
-
-                    .label {
-                        display: block;
-                        font-size: 0.9rem;
-                        color: #52beff;
-                        margin-bottom: 1rem;
-
-                        @media (min-width: 768px) {
-                            font-size: 1rem;
-                        }
-                    }
-
-                    .genre-tags {
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 0.8rem;
-
-                        .genre {
-                            background: linear-gradient(45deg, rgba(82, 190, 255, 0.2), rgba(255, 97, 166, 0.2));
-                            padding: 0.5rem 1rem;
-                            border-radius: 20px;
-                            font-size: 0.9rem;
-                            transition: all 0.3s ease;
-
-                            &:hover {
-                                background: linear-gradient(45deg, rgba(82, 190, 255, 0.3), rgba(255, 97, 166, 0.3));
-                                transform: translateY(-3px);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        .description {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-
-            h3 {
-                color: #52beff;
-                margin-bottom: 1rem;
-                font-size: 1.3rem;
-
-                @media (min-width: 768px) {
-                    font-size: 1.5rem;
-                }
-            }
-
-            p {
-                color: #ffffff;
-                line-height: 1.8;
-                font-size: 1rem;
-
-                @media (min-width: 768px) {
-                    font-size: 1.05rem;
-                }
-            }
-
-            button {
-                background: none;
-                border: none;
-                color: #52beff;
-                font-weight: 600;
-                cursor: pointer;
-                margin-left: 0.8rem;
-                transition: all 0.3s ease;
-
-                &:hover {
-                    color: #ff61a6;
-                    transform: translateX(5px);
-                }
-            }
-        }
+    .back-button:hover .arrow-island {
+        transform: translateX(-1px) translateY(1px);
+        background: rgba(201, 149, 91, 0.17);
     }
 
-    .themes-section {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 1.5rem;
-        margin-top: 3rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-
-        @media (min-width: 768px) {
-            padding: 2rem;
-        }
-
-        .themes-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-
-            @media (min-width: 992px) {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .theme-list {
-                h4 {
-                    font-size: 1.5rem;
-                    color: #52beff;
-                    margin-bottom: 1.5rem;
-                    padding-bottom: 0.5rem;
-                    border-bottom: 2px solid rgba(82, 190, 255, 0.3);
-                    position: relative;
-
-                    @media (min-width: 768px) {
-                        font-size: 1.8rem;
-                    }
-
-                    &::after {
-                        content: '';
-                        position: absolute;
-                        bottom: -2px;
-                        left: 0;
-                        width: 50px;
-                        height: 2px;
-                        background: linear-gradient(45deg, #52beff, #ff61a6);
-                    }
-                }
-
-                .theme-item {
-                    background: rgba(255, 255, 255, 0.05);
-                    padding: 1.2rem;
-                    border-radius: 12px;
-                    margin-bottom: 1rem;
-                    transition: all 0.3s ease;
-                    position: relative;
-                    overflow: hidden;
-
-                    &::before {
-                        content: '';
-                        position: absolute;
-                        top: 0;
-                        left: -100%;
-                        width: 200%;
-                        height: 100%;
-                        background: linear-gradient(
-                            90deg,
-                            transparent,
-                            rgba(82, 190, 255, 0.2),
-                            rgba(255, 97, 166, 0.2),
-                            transparent
-                        );
-                        transition: all 0.5s ease;
-                    }
-
-                    &:hover {
-                        transform: translateX(10px);
-                        background: rgba(255, 255, 255, 0.1);
-
-                        &::before {
-                            animation: ${shineEffect} 1.5s linear;
-                        }
-                    }
-
-                    .theme-number {
-                        background: linear-gradient(45deg, #52beff, #ff61a6);
-                        -webkit-background-clip: text;
-                        -webkit-text-fill-color: transparent;
-                        font-size: 1.2rem;
-                        font-weight: bold;
-                        margin-right: 1rem;
-                    }
-
-                    .theme-text {
-                        color: #ffffff;
-                        font-size: 0.9rem;
-                        letter-spacing: 0.5px;
-
-                        @media (min-width: 768px) {
-                            font-size: 1rem;
-                        }
-                    }
-                }
-            }
-        }
+    .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+        align-items: start;
+        gap: 1.6rem;
     }
 
-    .trailer-con {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 1.5rem;
-        margin-top: 3rem;
+    .hero-copy .eyebrow,
+    .section-header .eyebrow,
+    .panel-kicker {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.26rem 0.62rem;
+        font-size: 0.64rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        border: 1px solid var(--border-soft);
+        background: rgba(201, 149, 91, 0.12);
+        color: var(--accent-strong);
+        font-weight: 600;
+    }
+
+    .hero-copy h1 {
+        margin: 0.82rem 0 0;
+        font-size: clamp(2rem, 5vw, 4rem);
+        font-weight: 800;
+        line-height: 0.98;
+        letter-spacing: -0.05em;
+        text-wrap: balance;
+    }
+
+    .hero-copy .lead {
+        margin: 1rem 0 0;
+        max-width: 62ch;
+        color: var(--text-secondary);
+        line-height: 1.75;
+        font-size: 1.02rem;
+        text-wrap: pretty;
+    }
+
+    .read-toggle {
+        border: none;
+        background: transparent;
+        color: var(--accent-strong);
+        margin-left: 0.45rem;
+        font-size: 0.88rem;
+        font-weight: 600;
+        text-transform: lowercase;
+        transition: color 0.4s var(--ease-premium);
+    }
+
+    .read-toggle:hover {
+        color: #f0c997;
+    }
+
+    .meta-row {
+        margin-top: 1.1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .meta-chip {
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(16, 24, 35, 0.84);
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        font-variant-numeric: tabular-nums;
+        text-transform: lowercase;
+        padding: 0.35rem 0.72rem;
+    }
+
+    .poster-shell,
+    .panel,
+    .section-shell {
+        border-radius: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        padding: 0.34rem;
+        background:
+            linear-gradient(155deg, rgba(28, 38, 54, 0.72), rgba(13, 20, 30, 0.8)),
+            radial-gradient(circle at 0% 0%, rgba(201, 149, 91, 0.14), transparent 56%);
+        box-shadow: 0 22px 48px rgba(4, 8, 14, 0.48);
+    }
+
+    .poster-core,
+    .panel-core,
+    .section-shell {
+        border-radius: calc(2rem - 0.34rem);
+        background: linear-gradient(155deg, rgba(14, 21, 31, 0.96), rgba(10, 16, 24, 0.95));
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.09);
+    }
+
+    .poster-core {
+        padding: 0.65rem;
+    }
+
+    .poster-wrap {
         position: relative;
         overflow: hidden;
-
-        @media (min-width: 768px) {
-            padding: 2rem;
-        }
-
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            overflow: hidden;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-
-            iframe {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                border: none;
-                transition: all 0.3s ease;
-            }
-
-            .trailer-placeholder {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-        }
-
-        .play-button {
-            background: linear-gradient(45deg, #52beff, #ff61a6);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            
-            &:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            }
-
-            .play-icon {
-                animation: ${rippleEffect} 2s infinite;
-            }
-        }
-
-        .no-trailer {
-            padding: 4rem 2rem;
-            text-align: center;
-
-            .no-trailer-icon {
-                font-size: 3rem;
-                margin-bottom: 1.5rem;
-                background: linear-gradient(45deg, #52beff, #ff61a6);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                animation: ${floatAnimation} 3s infinite;
-                display: block;
-
-                @media (min-width: 768px) {
-                    font-size: 4rem;
-                }
-            }
-
-            h3 {
-                font-size: 1.5rem;
-                color: rgba(255, 255, 255, 0.7);
-
-                @media (min-width: 768px) {
-                    font-size: 1.8rem;
-                }
-            }
-        }
+        border-radius: 1.35rem;
+        aspect-ratio: 3 / 4;
     }
 
-    .characters {
+    .poster-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.75s var(--ease-premium);
+    }
+
+    .poster-shell:hover img {
+        transform: scale(1.04);
+    }
+
+    .poster-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: flex-end;
+        padding: 0.72rem;
+        background: linear-gradient(to top, rgba(9, 14, 21, 0.86), transparent 58%);
+    }
+
+    .rank-tag {
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(9, 14, 21, 0.74);
+        color: #ffffff;
+        font-size: 0.78rem;
+        letter-spacing: 0.03em;
+        padding: 0.3rem 0.62rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .poster-stats {
+        margin-top: 0.66rem;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 1.5rem;
-        margin-top: 2rem;
-
-        @media (min-width: 768px) {
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .character {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            overflow: hidden;
-            transition: all 0.4s ease;
-            height: 100%;
-
-            &:hover {
-                transform: translateY(-10px) scale(1.02);
-                box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-
-                .character-image {
-                    .character-overlay {
-                        opacity: 1;
-                        
-                        .view-more {
-                            transform: translateY(0);
-                            opacity: 1;
-                        }
-                    }
-                }
-            }
-
-            .character-image {
-                position: relative;
-                overflow: hidden;
-                aspect-ratio: 3/4;
-
-                img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    transition: all 0.4s ease;
-                }
-
-                .character-overlay {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: linear-gradient(
-                        180deg,
-                        rgba(26, 28, 44, 0.5) 0%,
-                        rgba(42, 60, 84, 0.9) 100%
-                    );
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    opacity: 0;
-                    transition: all 0.4s ease;
-
-                    .view-more {
-                        background: linear-gradient(45deg, #52beff, #ff61a6);
-                        padding: 0.8rem 1.5rem;
-                        border-radius: 25px;
-                        color: white;
-                        font-weight: 600;
-                        transform: translateY(20px);
-                        opacity: 0;
-                        transition: all 0.4s ease;
-                        font-size: 0.9rem;
-                    }
-                }
-            }
-
-            .character-info {
-                padding: 1.2rem;
-                text-align: center;
-
-                h4 {
-                    font-size: 1.1rem;
-                    margin-bottom: 0.5rem;
-                    background: linear-gradient(45deg, #52beff, #ff61a6);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    
-                    @media (min-width: 768px) {
-                        font-size: 1.2rem;
-                    }
-                }
-
-                .role-tag {
-                    background: linear-gradient(45deg, rgba(82, 190, 255, 0.2), rgba(255, 97, 166, 0.2));
-                    padding: 0.4rem 1rem;
-                    border-radius: 15px;
-                    font-size: 0.8rem;
-                    color: #ffffff;
-                    transition: all 0.3s ease;
-                    display: inline-block;
-
-                    @media (min-width: 768px) {
-                        font-size: 0.9rem;
-                    }
-
-                    &:hover {
-                        background: linear-gradient(45deg, rgba(82, 190, 255, 0.3), rgba(255, 97, 166, 0.3));
-                        transform: translateY(-2px);
-                    }
-                }
-            }
-        }
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem;
     }
 
-    .reviews {
-        margin-top: 2rem;
+    .poster-stats > div {
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(17, 26, 37, 0.88);
+        padding: 0.56rem 0.62rem;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 2rem;
-
-        @media (min-width: 768px) {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        @media (min-width: 1200px) {
-            grid-template-columns: repeat(3, 1fr);
-        }
-
-        .review-card {
-         background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(5px);
-            border-radius: 15px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-
-            &::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 3px;
-                background: linear-gradient(90deg, #52beff, #ff61a6);
-                transform: scaleX(0);
-                transform-origin: left;
-                transition: transform 0.3s ease;
-            }
-
-            &:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-
-                &::before {
-                    transform: scaleX(1);
-                }
-            }
-
-            .review-header {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-                margin-bottom: 1.5rem;
-
-                .reviewer-image-container {
-                    width: 50px;
-                    height: 50px;
-                    border-radius: 50%;
-                    overflow: hidden;
-                    border: 2px solid #52beff;
-                    flex-shrink: 0;
-
-                    @media (min-width: 768px) {
-                        width: 60px;
-                        height: 60px;
-                    }
-                    
-                    img {
-                        width: 100%;
-                        height: 100%;
-                        object-fit: cover;
-                    }
-                }
-
-                .reviewer-info {
-                    flex: 1;
-                    min-width: 0;
-
-                    h4 {
-                        color: #ffffff;
-                        margin-bottom: 0.5rem;
-                        font-size: 1rem;
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-
-                        @media (min-width: 768px) {
-                            font-size: 1.1rem;
-                        }
-                    }
-
-                    .review-score {
-                        background: linear-gradient(45deg, #52beff, #ff61a6);
-                        padding: 0.4rem 1rem;
-                        border-radius: 20px;
-                        display: inline-flex;
-                        align-items: baseline;
-                        gap: 0.3rem;
-
-                        .score-value {
-                            font-size: 1.1rem;
-                            font-weight: bold;
-
-                            @media (min-width: 768px) {
-                                font-size: 1.2rem;
-                            }
-                        }
-
-                        .score-max {
-                            opacity: 0.8;
-                            font-size: 0.9rem;
-                        }
-                    }
-                }
-            }
-
-            .review-text {
-                color: rgba(255, 255, 255, 0.9);
-                line-height: 1.6;
-                font-size: 0.9rem;
-
-                @media (min-width: 768px) {
-                    font-size: 0.95rem;
-                }
-            }
-        }
+        gap: 0.18rem;
     }
 
-    .no-reviews {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(5px);
-        border-radius: 20px;
-        padding: 3rem;
-        text-align: center;
-        margin-top: 2rem;
-
-        @media (min-width: 768px) {
-            margin-top: 3rem;
-        }
-
-        .no-reviews-icon {
-            font-size: 3rem;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(45deg, #52beff, #ff61a6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: ${floatAnimation} 3s infinite;
-            display: block;
-
-            @media (min-width: 768px) {
-                font-size: 4rem;
-            }
-        }
-
-        p {
-            font-size: 1.5rem;
-            color: rgba(255, 255, 255, 0.7);
-
-            @media (min-width: 768px) {
-                font-size: 1.8rem;
-            }
-        }
+    .poster-stats .label {
+        font-size: 0.68rem;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--text-muted);
     }
 
-    .title {
-        font-family: 'Oswald', sans-serif;
-        font-size: 1.8rem;
-        margin: 2.5rem 0 1rem;
-        color: #52beff;
+    .poster-stats .value {
+        font-size: 0.84rem;
+        color: var(--text-primary);
+        text-transform: lowercase;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .panel {
+        grid-column: span 4;
+    }
+
+    .panel.shell-wide {
+        grid-column: span 8;
+    }
+
+    .panel-core {
+        padding: 1.12rem;
+        height: 100%;
+    }
+
+    .panel-core h3 {
+        margin: 0.62rem 0 0.9rem;
+        font-size: 1.24rem;
+        letter-spacing: -0.02em;
+        text-transform: lowercase;
+    }
+
+    .title-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.58rem;
+    }
+
+    .title-item,
+    .detail-item {
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(17, 26, 37, 0.86);
+        border-radius: 1rem;
+        padding: 0.62rem 0.72rem;
+        display: grid;
+        gap: 0.16rem;
+    }
+
+    .item-label {
+        font-size: 0.64rem;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+    }
+
+    .item-value {
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        text-wrap: pretty;
+    }
+
+    .detail-list {
+        display: grid;
+        gap: 0.55rem;
+    }
+
+    .detail-item span {
+        font-size: 0.66rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+    }
+
+    .detail-item strong {
+        font-size: 0.88rem;
+        color: var(--text-primary);
+        font-weight: 600;
+        text-transform: lowercase;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .pill-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.48rem;
+    }
+
+    .pill-list span {
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        background: rgba(17, 26, 37, 0.9);
+        color: var(--text-secondary);
+        padding: 0.32rem 0.66rem;
+        font-size: 0.74rem;
+        text-transform: lowercase;
+    }
+
+    .company-columns {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.8rem;
+    }
+
+    .column-label {
+        display: inline-flex;
+        margin-bottom: 0.5rem;
+        font-size: 0.7rem;
+        letter-spacing: 0.12em;
+        color: var(--text-muted);
+        text-transform: uppercase;
+    }
+
+    .pill-list.compact span {
+        font-size: 0.72rem;
+    }
+
+    .section-shell {
+        padding: 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .section-header h2 {
+        margin: 0.62rem 0 0;
+        font-size: 1.5rem;
+        text-transform: lowercase;
+        letter-spacing: -0.03em;
+    }
+
+    .theme-columns {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.85rem;
+    }
+
+    .theme-list {
+        border-radius: 1.1rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(17, 26, 37, 0.88);
+        padding: 0.75rem;
+    }
+
+    .theme-list h4 {
+        margin: 0 0 0.7rem;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        text-transform: lowercase;
+        letter-spacing: 0.02em;
+    }
+
+    .theme-item {
+        border-radius: 0.9rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(13, 20, 30, 0.9);
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 0.55rem;
+        align-items: start;
+        padding: 0.56rem 0.62rem;
+    }
+
+    .theme-item + .theme-item {
+        margin-top: 0.52rem;
+    }
+
+    .track-id {
+        color: var(--accent-strong);
+        font-size: 0.72rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .theme-item span:last-child {
+        color: var(--text-secondary);
+        font-size: 0.82rem;
+        line-height: 1.45;
+    }
+
+    .trailer-frame {
+        border-radius: 1.2rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(12, 18, 27, 0.9);
+        padding: 0.7rem;
+    }
+
+    .video-container {
         position: relative;
-        display: inline-block;
-        padding-bottom: 0.5rem;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+        border-radius: 1rem;
+        background: linear-gradient(145deg, rgba(17, 26, 37, 0.92), rgba(10, 16, 24, 0.95));
+    }
 
-        @media (min-width: 768px) {
-            font-size: 2rem;
-            margin: 3rem 0 1.5rem;
+    .video-container iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    .play-button {
+        position: absolute;
+        inset: 0;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.58rem;
+        background: linear-gradient(145deg, rgba(9, 14, 21, 0.9), rgba(10, 16, 24, 0.82));
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: lowercase;
+        transition: background 0.62s var(--ease-premium), transform 0.62s var(--ease-premium);
+    }
+
+    .play-button:hover {
+        background: linear-gradient(145deg, rgba(12, 19, 28, 0.95), rgba(17, 26, 37, 0.9));
+        transform: scale(1.01);
+    }
+
+    .play-icon-wrap {
+        width: 1.7rem;
+        height: 1.7rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(201, 149, 91, 0.15);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-strong);
+        transition: transform 0.62s var(--ease-premium), background 0.62s var(--ease-premium);
+    }
+
+    .play-button:hover .play-icon-wrap {
+        transform: translateX(1px) translateY(-1px);
+        background: rgba(201, 149, 91, 0.24);
+    }
+
+    .characters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .character-card {
+        text-decoration: none;
+        color: inherit;
+        border-radius: 1.05rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(17, 26, 37, 0.88);
+        overflow: hidden;
+        transition: transform 0.65s var(--ease-premium), border-color 0.45s var(--ease-premium), box-shadow 0.45s var(--ease-premium);
+    }
+
+    .character-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(201, 149, 91, 0.3);
+        box-shadow: 0 16px 28px rgba(5, 8, 14, 0.4);
+    }
+
+    .character-image-wrap {
+        aspect-ratio: 4/5;
+        overflow: hidden;
+    }
+
+    .character-image-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.65s var(--ease-premium);
+    }
+
+    .character-card:hover img {
+        transform: scale(1.05);
+    }
+
+    .character-info {
+        padding: 0.66rem 0.72rem 0.78rem;
+    }
+
+    .character-info h4 {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .character-info p {
+        margin: 0.32rem 0 0;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        text-transform: lowercase;
+    }
+
+    .reviews-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 0.72rem;
+    }
+
+    .review-card {
+        border-radius: 1.05rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(17, 26, 37, 0.88);
+        padding: 0.78rem;
+    }
+
+    .review-head {
+        display: flex;
+        gap: 0.58rem;
+        align-items: center;
+        margin-bottom: 0.62rem;
+    }
+
+    .review-head img {
+        width: 2.1rem;
+        height: 2.1rem;
+        border-radius: 0.75rem;
+        object-fit: cover;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .review-head h4 {
+        margin: 0;
+        font-size: 0.84rem;
+        color: var(--text-primary);
+        letter-spacing: -0.01em;
+    }
+
+    .review-score {
+        margin-top: 0.2rem;
+        display: inline-flex;
+        border-radius: 999px;
+        border: 1px solid var(--border-soft);
+        background: rgba(201, 149, 91, 0.13);
+        color: var(--accent-strong);
+        font-size: 0.68rem;
+        padding: 0.16rem 0.45rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .review-card p {
+        margin: 0;
+        font-size: 0.8rem;
+        line-height: 1.56;
+        color: var(--text-secondary);
+        text-wrap: pretty;
+    }
+
+    .empty-state {
+        border-radius: 1rem;
+        border: 1px dashed rgba(255, 255, 255, 0.2);
+        background: rgba(17, 26, 37, 0.68);
+        color: var(--text-muted);
+        text-align: center;
+        padding: 1.2rem;
+        font-size: 0.86rem;
+    }
+
+    @media (max-width: 1024px) {
+        .hero-grid {
+            grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
         }
 
-        &::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(to right, #52beff, #ff61a6);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.3s ease;
+        .panel {
+            grid-column: span 6;
         }
 
-        &:hover::after {
-            transform: scaleX(1);
+        .panel.shell-wide {
+            grid-column: span 12;
+        }
+
+        .theme-columns,
+        .company-columns {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        padding: 2rem 0.86rem 4.2rem;
+
+        .page-shell {
+            gap: 1.45rem;
+        }
+
+        .hero-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .poster-shell {
+            max-width: 360px;
+        }
+
+        .bento-grid {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0.82rem;
+        }
+
+        .panel,
+        .panel.shell-wide {
+            grid-column: auto;
+        }
+
+        .title-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .section-shell {
+            padding: 0.8rem;
         }
     }
 `;

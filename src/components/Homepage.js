@@ -22,10 +22,7 @@ function Homepage() {
         handleChange,
         getUpcomingAnime,
         getAiringAnime,
-        getPopularAnime,
-        popularAnime,
-        airingAnime,
-        upcomingAnime
+        getPopularAnime
     } = useGlobalContext();
 
     const [rendered, setRendered] = useState('popular');
@@ -72,12 +69,6 @@ function Homepage() {
             default:
                 return <Popular rendered={rendered} />;
         }
-    };
-
-    const titleCount = {
-        popular: popularAnime?.length || 0,
-        airing: airingAnime?.length || 0,
-        upcoming: upcomingAnime?.length || 0
     };
 
     return (
@@ -155,25 +146,6 @@ function Homepage() {
                     </div>
                 </div>
             </nav>
-
-            <header className="hero-section">
-                <div className="hero-content">
-                    <p className="hero-kicker">curated anime feed</p>
-                    <h1 className="hero-title">Find your next series without digging through clutter.</h1>
-                    <p className="hero-subtitle">
-                        Browse what the community watches now, what is airing this week, and what is
-                        scheduled next.
-                    </p>
-                    <div className="hero-meta">
-                        <span className="meta-pill">
-                            {rendered} &#8226; {titleCount[rendered]} titles
-                        </span>
-                        <button onClick={() => navigate('/about')} className="about-inline">
-                            About this project <FaInfoCircle />
-                        </button>
-                    </div>
-                </div>
-            </header>
 
             <main className="content-section">{switchComponent()}</main>
         </HomepageStyled>
@@ -402,87 +374,10 @@ const HomepageStyled = styled.div`
         transform: scale(0.98);
     }
 
-    .hero-section {
-        max-width: 1320px;
-        margin: 0 auto;
-        padding: 8rem 1.15rem 2.1rem;
-    }
-
-    .hero-content {
-        max-width: 760px;
-    }
-
-    .hero-kicker {
-        display: inline-flex;
-        align-items: center;
-        border: 1px solid var(--border-soft);
-        border-radius: 999px;
-        padding: 0.32rem 0.72rem;
-        background: rgba(201, 149, 91, 0.11);
-        color: var(--accent-strong);
-        font-size: 0.8rem;
-        font-weight: 500;
-        letter-spacing: 0.03em;
-        text-transform: lowercase;
-        margin-bottom: 1rem;
-    }
-
-    .hero-title {
-        margin: 0;
-        font-size: clamp(1.9rem, 4.7vw, 3.45rem);
-        font-weight: 800;
-        line-height: 1.05;
-        letter-spacing: -0.045em;
-        text-wrap: balance;
-    }
-
-    .hero-subtitle {
-        margin: 1rem 0 0;
-        color: var(--text-secondary);
-        font-size: clamp(0.98rem, 1.6vw, 1.14rem);
-        max-width: 61ch;
-        line-height: 1.7;
-        text-wrap: pretty;
-    }
-
-    .hero-meta {
-        margin-top: 1.25rem;
-        display: flex;
-        align-items: center;
-        gap: 0.65rem;
-        flex-wrap: wrap;
-    }
-
-    .meta-pill {
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(18, 25, 35, 0.86);
-        color: var(--text-secondary);
-        padding: 0.42rem 0.8rem;
-        font-size: 0.84rem;
-        font-weight: 500;
-    }
-
-    .about-inline {
-        border: 1px solid transparent;
-        background: transparent;
-        color: var(--text-secondary);
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        padding: 0.42rem 0.3rem;
-        font-size: 0.9rem;
-        transition: color 0.24s ease;
-    }
-
-    .about-inline:hover {
-        color: var(--accent-strong);
-    }
-
     .content-section {
         max-width: 1320px;
         margin: 0 auto;
-        padding: 0 1.15rem 2.25rem;
+        padding: 7.2rem 1.15rem 2.25rem;
     }
 
     button:focus-visible,
@@ -558,22 +453,12 @@ const HomepageStyled = styled.div`
             justify-content: flex-start;
         }
 
-        .hero-section {
-            padding-top: 7.2rem;
-        }
     }
 
     @media (max-width: 560px) {
-        .hero-section,
         .content-section {
             padding-left: 0.85rem;
             padding-right: 0.85rem;
-        }
-
-        .hero-meta {
-            align-items: flex-start;
-            flex-direction: column;
-            gap: 0.3rem;
         }
 
         .brand-subtitle {

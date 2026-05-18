@@ -4,9 +4,12 @@ import { useGlobalContext } from "../context/global";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import Sidebar from "./Sidebar";
+import AnimeSectionHero from "./AnimeSectionHero";
 
 function Airing({ rendered }) {
   const { airingAnime, isSearch, searchResults } = useGlobalContext();
+  const sectionAnime =
+    (!isSearch && rendered === "airing" ? airingAnime : searchResults) || [];
 
   const container = {
     hidden: { opacity: 0 },
@@ -32,11 +35,14 @@ function Airing({ rendered }) {
         variants={container}
       >
         <div className="main-content">
+          <AnimeSectionHero
+            label="airing this week"
+            title="Episodes dropping live this season"
+            subtitle="Track currently broadcasting titles and jump into trending weekly arcs."
+            items={sectionAnime}
+          />
           <div className="airing-grid">
-            {(!isSearch && rendered === "airing"
-              ? airingAnime
-              : searchResults
-            )?.map((anime) => (
+            {sectionAnime?.map((anime) => (
               <Link to={`/anime/${anime.mal_id}`} key={anime.mal_id}>
                 <motion.div
                   className="anime-card"

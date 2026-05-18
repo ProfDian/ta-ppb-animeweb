@@ -4,9 +4,11 @@ import { useGlobalContext } from "../context/global";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import Sidebar from "./Sidebar";
+import AnimeSectionHero from "./AnimeSectionHero";
 
 function Popular() {
   const { popularAnime, isSearch, searchResults } = useGlobalContext();
+  const sectionAnime = !isSearch ? popularAnime : searchResults;
 
   const container = {
     hidden: { opacity: 0 },
@@ -32,8 +34,14 @@ function Popular() {
         variants={container}
       >
         <div className="main-content">
+          <AnimeSectionHero
+            label="popular now"
+            title="Most watched anime right now"
+            subtitle="Heavy community momentum, top scores, and instant picks to start next."
+            items={sectionAnime}
+          />
           <div className="popular-grid">
-            {(!isSearch ? popularAnime : searchResults)?.map((anime) => (
+            {sectionAnime?.map((anime) => (
               <Link to={`/anime/${anime.mal_id}`} key={anime.mal_id}>
                 <motion.div
                   className="anime-card"
