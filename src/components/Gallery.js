@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
-import { useGlobalContext } from "../context/global";
 import {
   RiArrowLeftLine,
   RiGalleryLine,
@@ -12,11 +11,11 @@ import {
 } from "react-icons/ri";
 
 function Gallery() {
-  const { getAnimePictures, pictures } = useGlobalContext();
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [index, setIndex] = useState(0);
+  const [pictures, setPictures] = useState([]);
   const [characterData, setCharacterData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -35,12 +34,24 @@ function Gallery() {
     let isMounted = true;
 
     const loadData = async () => {
+      if (!id) {
+        setErrorMessage("Invalid character id.");
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       setErrorMessage("");
       setIndex(0);
 
       try {
-        await getAnimePictures(id);
+        const picturesResponse = await fetch(
+          `https://api.jikan.moe/v4/characters/${id}/pictures`,
+        );
+        if (!picturesResponse.ok) {
+          throw new Error("Failed to load character gallery.");
+        }
+        const picturesData = await picturesResponse.json();
 
         const response = await fetch(
           `https://api.jikan.moe/v4/characters/${id}`,
@@ -51,11 +62,14 @@ function Gallery() {
         const data = await response.json();
 
         if (isMounted) {
+          setPictures(Array.isArray(picturesData?.data) ? picturesData.data : []);
           setCharacterData(data.data || null);
         }
       } catch (error) {
         if (isMounted) {
-          setErrorMessage(error.message || "Unable to load gallery data.");
+          setErrorMessage(
+            error instanceof Error ? error.message : "Unable to load gallery data.",
+          );
         }
       } finally {
         if (isMounted) {
@@ -69,7 +83,7 @@ function Gallery() {
     return () => {
       isMounted = false;
     };
-  }, [id, getAnimePictures]);
+  }, [id]);
 
   if (isLoading) {
     return (
